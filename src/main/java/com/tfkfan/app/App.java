@@ -1,5 +1,6 @@
 package com.tfkfan.app;
 
+import com.tfkfan.app.ui.dbwindow.DBConnectionFormController;
 import javafx.application.Application;
 import javafx.fxml.FXMLLoader;
 import javafx.scene.Parent;
@@ -9,16 +10,58 @@ import javafx.stage.Stage;
 import java.io.IOException;
 
 public class App extends Application {
-    private final String title = "Sheets Updater";
+    public final String title = "Sheets Updater";
+
+    private Stage primaryStage;
+    private Parent dbWindow;
+    private Parent mainWindow;
+
     public static void main(String[] args) {
         launch(args);
     }
 
     @Override
     public void start(Stage primaryStage) throws IOException {
-        Parent parent = FXMLLoader.load(getClass().getResource("ui/MainForm.fxml"));
+        setPrimaryStage(primaryStage);
+
+        final FXMLLoader dbWindowLoader = new FXMLLoader(getClass().getResource(
+                "ui/dbwindow/DBConnectionForm.fxml"));
+
+        final Parent dbWindow = dbWindowLoader.load();
+        setDbWindow(dbWindow);
+
+        final Parent mainWindow = FXMLLoader.load(getClass().getResource("ui/mainform/MainForm.fxml"));
+        setMainWindow(mainWindow);
+
+        final DBConnectionFormController dbWindowController = dbWindowLoader.getController();
+        dbWindowController.setApp(this);
+
         primaryStage.setTitle(title);
-        primaryStage.setScene(new Scene(parent));
+        primaryStage.setScene(new Scene(dbWindow));
         primaryStage.show();
+    }
+
+    public Stage getPrimaryStage() {
+        return primaryStage;
+    }
+
+    public void setPrimaryStage(Stage primaryStage) {
+        this.primaryStage = primaryStage;
+    }
+
+    public Parent getDbWindow() {
+        return dbWindow;
+    }
+
+    public void setDbWindow(Parent dbWindow) {
+        this.dbWindow = dbWindow;
+    }
+
+    public Parent getMainWindow() {
+        return mainWindow;
+    }
+
+    public void setMainWindow(Parent mainWindow) {
+        this.mainWindow = mainWindow;
     }
 }

@@ -12,7 +12,6 @@ import static com.tfkfan.app.sheets.SheetsHelper.*;
 
 public class SheetsQuickstart {
     public static void main(String... args) throws IOException, GeneralSecurityException {
-        // Build a new authorized API client service.
         Spreadsheet sp = new Spreadsheet();
         Sheet sheet = new Sheet();
 
