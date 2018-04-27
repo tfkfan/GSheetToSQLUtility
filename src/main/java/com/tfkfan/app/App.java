@@ -1,7 +1,9 @@
 package com.tfkfan.app;
 
 import com.tfkfan.app.ui.dbwindow.DBConnectionFormController;
+import com.tfkfan.app.ui.mainform.MainFormController;
 import javafx.application.Application;
+import javafx.fxml.FXML;
 import javafx.fxml.FXMLLoader;
 import javafx.scene.Parent;
 import javafx.scene.Scene;
@@ -27,14 +29,22 @@ public class App extends Application {
         final FXMLLoader dbWindowLoader = new FXMLLoader(getClass().getResource(
                 "ui/dbwindow/DBConnectionForm.fxml"));
 
+        final FXMLLoader mainWindowLoader =  new FXMLLoader(getClass().getResource(
+                "ui/mainform/MainForm.fxml"));
+
         final Parent dbWindow = dbWindowLoader.load();
         setDbWindow(dbWindow);
 
-        final Parent mainWindow = FXMLLoader.load(getClass().getResource("ui/mainform/MainForm.fxml"));
+        final Parent mainWindow = mainWindowLoader.load();
         setMainWindow(mainWindow);
+
+        //////////////////////////////////////////
 
         final DBConnectionFormController dbWindowController = dbWindowLoader.getController();
         dbWindowController.setApp(this);
+
+        final MainFormController mainFormController = mainWindowLoader.getController();
+        mainFormController.setApp(this);
 
         primaryStage.setTitle(title);
         primaryStage.setScene(new Scene(dbWindow));

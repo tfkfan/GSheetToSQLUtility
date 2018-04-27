@@ -1,5 +1,6 @@
 package com.tfkfan.app.ui.mainform;
 
+import com.tfkfan.app.App;
 import javafx.beans.value.ChangeListener;
 import javafx.beans.value.ObservableValue;
 import javafx.event.ActionEvent;
@@ -15,6 +16,8 @@ import java.net.URL;
 import java.util.ResourceBundle;
 
 public class MainFormController implements Initializable {
+    private App app;
+
     @FXML
     Slider timeSlider;
 
@@ -42,5 +45,13 @@ public class MainFormController implements Initializable {
             timeSlider.setValue(val);
 
         });
+    }
+
+    public App getApp() {
+        return app;
+    }
+
+    public void setApp(App app) {
+        this.app = app;
     }
 }
