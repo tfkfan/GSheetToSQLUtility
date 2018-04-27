@@ -19,13 +19,14 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.security.GeneralSecurityException;
+import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 
-public class SheetsHelper {
+public final class SheetsHelper {
     private static final String CLIENT_SECRET_DIR = "/client_secret.json";
     public static final String APPLICATION_NAME = "Google Sheets API Java";
-    public static final List<String> SCOPES = Collections.singletonList(SheetsScopes.SPREADSHEETS_READONLY);
+    public static final List<String> SCOPES = new ArrayList<>(SheetsScopes.all());
     public static final JsonFactory JSON_FACTORY = JacksonFactory.getDefaultInstance();
     public static final String CREDENTIALS_FOLDER = "credentials"; // Directory to store user credentials.
 
@@ -51,14 +52,18 @@ public class SheetsHelper {
     }
 
     public static List<List<Object>> readSpreadSheet(String spreadsheetId, String range) throws IOException, GeneralSecurityException {
-        final NetHttpTransport HTTP_TRANSPORT = GoogleNetHttpTransport.newTrustedTransport();
-        Sheets service = new Sheets.Builder(HTTP_TRANSPORT, JSON_FACTORY, getCredentials(HTTP_TRANSPORT))
-                .setApplicationName(APPLICATION_NAME)
-                .build();
-        ValueRange response = service.spreadsheets().values()
+        ValueRange response = getSpreadsheets().values()
                 .get(spreadsheetId, range)
                 .execute();
         List<List<Object>> values = response.getValues();
         return values;
+    }
+
+    public static Sheets.Spreadsheets getSpreadsheets() throws GeneralSecurityException, IOException {
+        final NetHttpTransport HTTP_TRANSPORT = GoogleNetHttpTransport.newTrustedTransport();
+        Sheets service = new Sheets.Builder(HTTP_TRANSPORT, JSON_FACTORY, getCredentials(HTTP_TRANSPORT))
+                .setApplicationName(APPLICATION_NAME)
+                .build();
+        return service.spreadsheets();
     }
 }
