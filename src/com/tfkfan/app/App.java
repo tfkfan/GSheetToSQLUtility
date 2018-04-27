@@ -18,7 +18,7 @@ public class App extends Application {
     public void start(Stage primaryStage) throws IOException {
         Parent parent = FXMLLoader.load(getClass().getResource("ui/MainForm.fxml"));
         primaryStage.setTitle(title);
-        primaryStage.setScene(new Scene(parent, 900, 600));
+        primaryStage.setScene(new Scene(parent));
         primaryStage.show();
     }
 }
