@@ -1,10 +1,12 @@
 package com.tfkfan.app.ui.dbform;
 
 import com.tfkfan.app.db.utils.DbUtils;
+import javafx.event.ActionEvent;
 import javafx.fxml.FXML;
 import javafx.fxml.Initializable;
 import javafx.scene.control.Alert;
 import javafx.scene.control.Button;
+import javafx.scene.control.CheckBox;
 import javafx.scene.control.TextField;
 import javafx.scene.input.MouseEvent;
 import javafx.stage.Stage;
@@ -62,6 +64,20 @@ public class DBConnectionFormController implements Initializable {
         updateConnection();
     }
 
+    @FXML
+    public void localCheckboxValueChanged(ActionEvent actionEvent) {
+        Boolean isSelected = ((CheckBox) actionEvent.getSource()).isSelected();
+        db_host.setText("");
+        db_host.setDisable(isSelected);
+    }
+
+    @FXML
+    public void defaultCheckboxValueChanged(ActionEvent actionEvent) {
+        Boolean isSelected = ((CheckBox) actionEvent.getSource()).isSelected();
+        db_port.setText("");
+        db_port.setDisable(isSelected);
+    }
+
     private void updateConnection() {
         updateProperties();
         try {
@@ -89,8 +105,8 @@ public class DBConnectionFormController implements Initializable {
         properties = new HashMap<>();
         properties.put("user", db_user.getText());
         properties.put("password", db_password.getText());
-        properties.put("host", db_host.getText());
-        properties.put("port", db_port.getText());
+        properties.put("host", db_host.isDisabled() ? "localhost" : db_host.getText());
+        properties.put("port", db_port.isDisabled() ? String.valueOf(1433) : db_port.getText());
         properties.put("name", db_name.getText());
     }
 

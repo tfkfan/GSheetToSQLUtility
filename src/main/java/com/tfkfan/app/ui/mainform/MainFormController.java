@@ -35,12 +35,10 @@ public class MainFormController implements Initializable {
     @FXML
     public Label timeLabel;
 
-    DBConnectionFormController dbWindowController;
-
-    Parent dbWindow;
-
-    Stage dbWindowModal;
-    Stage mainStage;
+    private DBConnectionFormController dbWindowController;
+    private Parent dbWindow;
+    private Stage dbWindowModal;
+    private Stage mainStage;
 
     private Map<String, String> properties;
     private Connection connection;
@@ -60,7 +58,6 @@ public class MainFormController implements Initializable {
                 timeSlider.setDisable(false);
             }
         }
-
     }
 
     @Override
