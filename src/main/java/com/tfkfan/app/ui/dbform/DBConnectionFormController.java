@@ -1,5 +1,6 @@
 package com.tfkfan.app.ui.dbform;
 
+import com.tfkfan.app.db.utils.DbUtils;
 import javafx.fxml.FXML;
 import javafx.fxml.Initializable;
 import javafx.scene.control.Alert;
@@ -9,6 +10,7 @@ import javafx.scene.input.MouseEvent;
 import javafx.stage.Stage;
 
 import java.net.URL;
+import java.sql.Connection;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.ResourceBundle;
@@ -21,7 +23,10 @@ public class DBConnectionFormController implements Initializable {
     public TextField db_password;
 
     @FXML
-    public TextField db_url;
+    public TextField db_host;
+
+    @FXML
+    public TextField db_port;
 
     @FXML
     public TextField db_name;
@@ -32,29 +37,23 @@ public class DBConnectionFormController implements Initializable {
     @FXML
     public Button saveBtn;
 
+
     private Stage dbWindow;
 
     private Map<String, String> properties;
-    private Boolean isConnected;
+    private Connection connection;
 
     @Override
     public void initialize(URL location, ResourceBundle resources) {
-        setConnected(false);
+
     }
 
     @FXML
     public void saveButtonClick(MouseEvent mouseEvent) {
         updateConnection();
 
-        if (isConnected()) {
+        if (getConnection() != null) {
             getDbWindow().close();
-        } else {
-            Alert alert = new Alert(Alert.AlertType.INFORMATION);
-            alert.setTitle("Alert");
-            alert.setHeaderText("Warning");
-            alert.setContentText("Connection not established. Try again!");
-
-            alert.show();
         }
     }
 
@@ -66,25 +65,32 @@ public class DBConnectionFormController implements Initializable {
     private void updateConnection() {
         updateProperties();
         try {
-            //Test connection here
+            setConnection(DbUtils.getConnection(getProperties().get("host"), Integer.valueOf(getProperties().get("port")),
+                    getProperties().get("name"), getProperties().get("user"), getProperties().get("password")));
 
-            Alert alert = new Alert(Alert.AlertType.INFORMATION);
-            alert.setTitle("Alert");
-            alert.setHeaderText("Info");
-            alert.setContentText("Connection established!");
-            alert.show();
+            showAlert("info", "Connection established.");
 
-            setConnected(true);
+            checkConnectionBtn.setDisable(true);
         } catch (Exception e) {
-            setConnected(false);
+            showAlert("warning", "Connection not established. Try again!");
+            setConnection(null);
         }
+    }
+
+    private void showAlert(String header, String text) {
+        Alert alert = new Alert(Alert.AlertType.INFORMATION);
+        alert.setTitle("Alert");
+        alert.setHeaderText(header);
+        alert.setContentText(text);
+        alert.showAndWait();
     }
 
     private void updateProperties() {
         properties = new HashMap<>();
         properties.put("user", db_user.getText());
         properties.put("password", db_password.getText());
-        properties.put("url", db_url.getText());
+        properties.put("host", db_host.getText());
+        properties.put("port", db_port.getText());
         properties.put("name", db_name.getText());
     }
 
@@ -104,13 +110,11 @@ public class DBConnectionFormController implements Initializable {
         this.dbWindow = dbWindow;
     }
 
-    public Boolean isConnected() {
-        return isConnected;
+    public Connection getConnection() {
+        return connection;
     }
 
-    public void setConnected(Boolean connected) {
-        isConnected = connected;
+    public void setConnection(Connection connection) {
+        this.connection = connection;
     }
-
-
 }

@@ -32,6 +32,7 @@ public class App extends Application {
         final MainFormController mainFormController = mainWindowLoader.getController();
         mainFormController.setMainStage(primaryStage);
 
+        primaryStage.setResizable(false);
         primaryStage.setTitle(title);
         primaryStage.setScene(new Scene(mainWindow));
         primaryStage.show();
