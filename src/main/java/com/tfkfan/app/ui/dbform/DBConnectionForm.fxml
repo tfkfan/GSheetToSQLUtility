@@ -5,7 +5,7 @@
 <?import javafx.scene.control.TextField?>
 <?import javafx.scene.layout.Pane?>
 
-<Pane maxHeight="-Infinity" maxWidth="-Infinity" minHeight="-Infinity" minWidth="-Infinity" prefHeight="400.0" prefWidth="566.0" xmlns="http://javafx.com/javafx/8.0.121" xmlns:fx="http://javafx.com/fxml/1" fx:controller="com.tfkfan.app.ui.dbwindow.DBConnectionFormController">
+<Pane maxHeight="-Infinity" maxWidth="-Infinity" minHeight="-Infinity" minWidth="-Infinity" prefHeight="400.0" prefWidth="566.0" xmlns="http://javafx.com/javafx/8.0.121" xmlns:fx="http://javafx.com/fxml/1" fx:controller="com.tfkfan.app.ui.dbform.DBConnectionFormController">
    <children>
       <Label layoutX="160.0" layoutY="90.0" text="DB User" />
       <Label layoutX="147.0" layoutY="126.0" text="DB Password" />
@@ -15,8 +15,8 @@
       <TextField fx:id="db_password" layoutX="235.0" layoutY="122.0" />
       <TextField fx:id="db_url" layoutX="235.0" layoutY="155.0" />
       <TextField fx:id="db_name" layoutX="235.0" layoutY="188.0" />
-      <Button layoutX="118.0" layoutY="284.0" mnemonicParsing="false" onMouseClicked="#checkButtonClick" prefHeight="37.0" prefWidth="126.0" text="Check Connection" />
-      <Button layoutX="321.0" layoutY="284.0" mnemonicParsing="false" onMouseClicked="#saveButtonClick" prefHeight="37.0" prefWidth="126.0" text="Save" />
+      <Button fx:id="checkConnectionBtn" layoutX="118.0" layoutY="284.0" mnemonicParsing="false" onMouseClicked="#checkButtonClick" prefHeight="37.0" prefWidth="126.0" text="Check Connection" />
+      <Button fx:id="saveBtn" layoutX="321.0" layoutY="284.0" mnemonicParsing="false" onMouseClicked="#saveButtonClick" prefHeight="37.0" prefWidth="126.0" text="Save" />
       <Label layoutX="215.0" layoutY="14.0" text="DB Connection Properties" />
    </children>
 </Pane>
