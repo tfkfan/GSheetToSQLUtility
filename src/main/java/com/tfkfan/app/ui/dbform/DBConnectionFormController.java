@@ -17,6 +17,8 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.ResourceBundle;
 
+import static com.tfkfan.app.helpers.AppHelper.showAlert;
+
 public class DBConnectionFormController implements Initializable {
     @FXML
     public TextField db_user;
@@ -108,14 +110,6 @@ public class DBConnectionFormController implements Initializable {
             showAlert("warning", "Connection not established. Try again!");
             setConnection(null);
         }
-    }
-
-    private void showAlert(String header, String text) {
-        Alert alert = new Alert(Alert.AlertType.INFORMATION);
-        alert.setTitle("Alert");
-        alert.setHeaderText(header);
-        alert.setContentText(text);
-        alert.showAndWait();
     }
 
     private void updateProperties() {

@@ -79,7 +79,15 @@ public final class SheetsHelper {
     }
 
     public static void createSheetIfNotExist(String spreadsheetId, String sheetName) throws GeneralSecurityException, IOException {
-        Sheet foundSheet = getSpreadsheets().get(spreadsheetId).execute().getSheets().stream().filter(sheet -> sheet.getProperties().getTitle().equals(sheetName)).findFirst().get();
+        List<Sheet> sheets =getSpreadsheets().get(spreadsheetId).execute().getSheets();
+        Sheet foundSheet = null;
+
+        for(Sheet sheet : sheets){
+            if(sheet.getProperties().getTitle().equals(sheetName)) {
+                foundSheet = sheet;
+                break;
+            }
+        }
 
         if(foundSheet != null)
             return;

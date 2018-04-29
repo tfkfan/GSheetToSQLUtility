@@ -1,37 +1,23 @@
 package com.tfkfan.app.ui.mainform;
 
-import com.google.api.services.sheets.v4.model.AppendValuesResponse;
-import com.google.api.services.sheets.v4.model.ValueRange;
 import com.tfkfan.app.helpers.DbHelper;
 import com.tfkfan.app.ui.dbform.DBConnectionFormController;
 import javafx.event.ActionEvent;
-import javafx.event.Event;
 import javafx.fxml.FXML;
 import javafx.fxml.FXMLLoader;
 import javafx.fxml.Initializable;
 import javafx.scene.Parent;
 import javafx.scene.Scene;
-import javafx.scene.control.Button;
-import javafx.scene.control.Label;
-import javafx.scene.control.Slider;
-import javafx.scene.control.TextField;
+import javafx.scene.control.*;
 import javafx.stage.Modality;
 import javafx.stage.Stage;
 
 import java.io.IOException;
 import java.net.URL;
-import java.security.GeneralSecurityException;
 import java.sql.Connection;
-import java.sql.ResultSet;
-import java.sql.ResultSetMetaData;
-import java.sql.SQLException;
 import java.util.*;
 
-import static com.tfkfan.app.helpers.AppHelper.processApp;
-import static com.tfkfan.app.helpers.AppHelper.processDatabase;
-import static com.tfkfan.app.helpers.AppHelper.processSpreadsheets;
-import static com.tfkfan.app.helpers.SheetsHelper.getSpreadsheetId;
-import static com.tfkfan.app.helpers.SheetsHelper.getSpreadsheets;
+import static com.tfkfan.app.helpers.AppHelper.*;
 
 public class MainFormController implements Initializable {
 
@@ -49,6 +35,9 @@ public class MainFormController implements Initializable {
 
     @FXML
     public TextField spreadsheetUrlField;
+
+    @FXML
+    public ProgressBar progressBar;
 
     private DBConnectionFormController dbWindowController;
     private Parent dbWindow;
@@ -79,12 +68,17 @@ public class MainFormController implements Initializable {
             timeSlider.setDisable(false);
         }
 
-        processApp(getProperties().get("name"), tables, getConnection(), spreadsheetUrlField.getText());
+        if (spreadsheetUrlField.getText().isEmpty()) {
+            showAlert("info", "You have not specified Spreadsheet Url to update.");
+            return;
+        }
+
+        processApp(progressBar, getProperties().get("name"), tables, getConnection(), spreadsheetUrlField.getText());
     }
 
     @FXML
     public void stopBtnClick(ActionEvent actionEvent) {
-
+        progressBar.setProgress(0.33d);
     }
 
     @Override
@@ -129,7 +123,7 @@ public class MainFormController implements Initializable {
             dbWindowModal.setTitle("DB Connection");
             dbWindowModal.setScene(new Scene(dbWindow));
             dbWindowModal.initModality(Modality.WINDOW_MODAL);
-            dbWindowModal.initOwner(mainStage);
+            dbWindowModal.initOwner(getMainStage());
 
             dbWindowController.setDbWindow(dbWindowModal);
         }

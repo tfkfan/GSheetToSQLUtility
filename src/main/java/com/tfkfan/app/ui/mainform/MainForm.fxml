@@ -20,7 +20,7 @@
          </children>
       </Group>
       <Button fx:id="startBtn" layoutX="577.0" layoutY="338.0" mnemonicParsing="false" onAction="#startBtnClick" prefHeight="44.0" prefWidth="140.0" text="Start Update" />
-      <ProgressBar layoutX="21.0" layoutY="342.0" prefHeight="18.0" prefWidth="386.0" progress="0.0" />
+      <ProgressBar fx:id="progressBar" layoutX="21.0" layoutY="342.0" prefHeight="18.0" prefWidth="386.0" progress="0.0" />
       <Label layoutX="21.0" layoutY="369.0" prefHeight="17.0" prefWidth="413.0" text="Table is processing..." visible="false" />
       <Button fx:id="stopBtn" layoutX="421.0" layoutY="338.0" mnemonicParsing="false" onAction="#stopBtnClick" prefHeight="44.0" prefWidth="140.0" text="Stop" />
       <Button layoutX="577.0" layoutY="26.0" mnemonicParsing="false" onAction="#dbConnClick" prefHeight="44.0" prefWidth="140.0" text="Set DB Connection" />
