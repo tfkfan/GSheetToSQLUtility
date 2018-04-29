@@ -10,9 +10,7 @@ import javafx.stage.Stage;
 import java.io.IOException;
 
 public class App extends Application {
-    public final String title = "Sheets Updater";
-
-    private Parent mainWindow;
+    public static final String title = "Sheets Updater";
 
     public static void main(String[] args) {
         launch(args);
@@ -20,14 +18,10 @@ public class App extends Application {
 
     @Override
     public void start(Stage primaryStage) throws IOException {
-        final FXMLLoader mainWindowLoader =  new FXMLLoader(getClass().getResource(
+        final FXMLLoader mainWindowLoader = new FXMLLoader(getClass().getResource(
                 "ui/mainform/MainForm.fxml"));
 
         final Parent mainWindow = mainWindowLoader.load();
-        setMainWindow(mainWindow);
-
-        //////////////////////////////////////////
-
         final MainFormController mainFormController = mainWindowLoader.getController();
         mainFormController.setMainStage(primaryStage);
 
@@ -35,13 +29,5 @@ public class App extends Application {
         primaryStage.setTitle(title);
         primaryStage.setScene(new Scene(mainWindow));
         primaryStage.show();
-    }
-
-    public Parent getMainWindow() {
-        return mainWindow;
-    }
-
-    public void setMainWindow(Parent mainWindow) {
-        this.mainWindow = mainWindow;
     }
 }

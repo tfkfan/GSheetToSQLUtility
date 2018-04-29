@@ -82,7 +82,8 @@ public class MainFormController implements Initializable {
     private Connection connection;
 
     private static String[] tables = {"invoice", "salesorder", "salesorderlinedetail"};
-    private static Integer pageLimit = 1000;
+    private static Integer page = 1000;
+    private static Integer maxRows = 100000;
 
     @FXML
     public void startBtnClick(ActionEvent actionEvent) {
@@ -162,8 +163,8 @@ public class MainFormController implements Initializable {
                 int rows = 0;
 
                 List<List<Object>> allValues = new ArrayList<>(new ArrayList<>());
-                while (rows <= 100000) {
-                    List<List<Object>> values = processDatabase(connection, table, rows, pageLimit);
+                while (rows <= maxRows) {
+                    List<List<Object>> values = processDatabase(connection, table, rows, page);
                     rows += values.size() + 1;
                     if (values.size() == 0)
                         break;
