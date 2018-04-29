@@ -1,9 +1,6 @@
 package com.tfkfan.app.helpers;
 
-import com.google.api.services.sheets.v4.model.AppendValuesResponse;
-import com.google.api.services.sheets.v4.model.Sheet;
-import com.google.api.services.sheets.v4.model.Spreadsheet;
-import com.google.api.services.sheets.v4.model.ValueRange;
+import com.google.api.services.sheets.v4.model.*;
 
 import java.io.IOException;
 import java.security.GeneralSecurityException;
@@ -14,11 +11,11 @@ import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.List;
 
-import static com.tfkfan.app.helpers.SheetsHelper.getSpreadsheetId;
-import static com.tfkfan.app.helpers.SheetsHelper.getSpreadsheets;
+import static com.tfkfan.app.helpers.SheetsHelper.*;
 
 public class AppHelper {
     public static void processSpreadsheets(String spreadsheetId, String sheetName, List<List<Object>> values) throws GeneralSecurityException, IOException {
+        createSheetIfNotExist(spreadsheetId, sheetName);
         ValueRange body = new ValueRange()
                 .setValues(values);
 
@@ -33,11 +30,11 @@ public class AppHelper {
         List<List<Object>> values = new ArrayList<>(new ArrayList<>());
         try {
             //TODO TxnId is not in some table, change It to valid query
-            String query =" WITH CTE AS( "
-            + " SELECT ROW_NUMBER() OVER ( ORDER BY [TxnId] ) AS RowNum , * FROM " + tableName + ") "
-            + " SELECT * FROM CTE WHERE "
-            + " RowNum BETWEEN " + rowStart + " AND " + (rowStart + offset - 1) + " "
-            + " Order By RowNum ";
+            String query = " WITH CTE AS( "
+                    + " SELECT ROW_NUMBER() OVER ( ORDER BY [TxnId] ) AS RowNum , * FROM " + tableName + ") "
+                    + " SELECT * FROM CTE WHERE "
+                    + " RowNum BETWEEN " + rowStart + " AND " + (rowStart + offset - 1) + " "
+                    + " Order By RowNum ";
 
             rs = DbHelper.executeQuery(query, connection);
 

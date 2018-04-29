@@ -12,7 +12,7 @@ import com.google.api.client.json.jackson2.JacksonFactory;
 import com.google.api.client.util.store.FileDataStoreFactory;
 import com.google.api.services.sheets.v4.Sheets;
 import com.google.api.services.sheets.v4.SheetsScopes;
-import com.google.api.services.sheets.v4.model.ValueRange;
+import com.google.api.services.sheets.v4.model.*;
 import com.tfkfan.app.SheetsQuickstart;
 
 import java.io.IOException;
@@ -22,6 +22,7 @@ import java.security.GeneralSecurityException;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
+import java.util.function.Predicate;
 
 public final class SheetsHelper {
     private static final String CLIENT_SECRET_DIR = "/client_secret.json";
@@ -65,6 +66,37 @@ public final class SheetsHelper {
                 .setApplicationName(APPLICATION_NAME)
                 .build();
         return service.spreadsheets();
+    }
+
+    public static BatchUpdateSpreadsheetResponse executeBatchRequest(List<Request> requests, String spreadsheetId) throws GeneralSecurityException, IOException {
+        BatchUpdateSpreadsheetRequest requestBody = new BatchUpdateSpreadsheetRequest();
+        requestBody.setRequests(requests);
+
+        Sheets.Spreadsheets.BatchUpdate request =
+                getSpreadsheets().batchUpdate(spreadsheetId, requestBody);
+
+        return request.execute();
+    }
+
+    public static void createSheetIfNotExist(String spreadsheetId, String sheetName) throws GeneralSecurityException, IOException {
+        Sheet foundSheet = getSpreadsheets().get(spreadsheetId).execute().getSheets().stream().filter(sheet -> sheet.getProperties().getTitle().equals(sheetName)).findFirst().get();
+
+        if(foundSheet != null)
+            return;
+
+        final List<Request> requests = new ArrayList<>();
+        final AddSheetRequest addSheetRequest = new AddSheetRequest();
+        addSheetRequest.setProperties(new SheetProperties().setTitle(sheetName));
+
+        final Request request = new Request();
+        request.setAddSheet(addSheetRequest);
+
+        requests.add(request);
+
+        BatchUpdateSpreadsheetResponse response = executeBatchRequest(requests, spreadsheetId);
+
+        // TODO: Change code below to process the `response` object:
+        System.out.println(response);
     }
 
     public static String getSpreadsheetId(String url) {
