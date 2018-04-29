@@ -14,15 +14,15 @@
          <children>
             <Label layoutX="2.0" text="Select time for auto update" />
             <Slider fx:id="timeSlider" blockIncrement="1.0" layoutX="2.0" layoutY="28.0" max="60.0" min="1.0" prefHeight="14.0" prefWidth="292.0" showTickLabels="true" showTickMarks="true" value="5.0" />
-            <TextField layoutY="169.0" prefHeight="25.0" prefWidth="292.0" />
+            <TextField fx:id="spreadsheetUrlField" layoutY="169.0" prefHeight="25.0" prefWidth="292.0" />
             <Label layoutX="3.0" layoutY="133.0" text="Sheet URL" />
             <Label fx:id="timeLabel" layoutX="115.0" layoutY="80.0" prefHeight="17.0" prefWidth="165.0" text="Every..." />
          </children>
       </Group>
-      <Button fx:id="startBtn" layoutX="577.0" layoutY="338.0" mnemonicParsing="false" onMouseClicked="#startButtonClick" prefHeight="44.0" prefWidth="140.0" text="Start Update" />
+      <Button fx:id="startBtn" layoutX="577.0" layoutY="338.0" mnemonicParsing="false" onAction="#startBtnClick" prefHeight="44.0" prefWidth="140.0" text="Start Update" />
       <ProgressBar layoutX="21.0" layoutY="342.0" prefHeight="18.0" prefWidth="386.0" progress="0.0" />
       <Label layoutX="21.0" layoutY="369.0" prefHeight="17.0" prefWidth="413.0" text="Table is processing..." visible="false" />
-      <Button fx:id="stopBtn" layoutX="421.0" layoutY="338.0" mnemonicParsing="false" prefHeight="44.0" prefWidth="140.0" text="Stop" />
+      <Button fx:id="stopBtn" layoutX="421.0" layoutY="338.0" mnemonicParsing="false" onAction="#stopBtnClick" prefHeight="44.0" prefWidth="140.0" text="Stop" />
       <Button layoutX="577.0" layoutY="26.0" mnemonicParsing="false" onAction="#dbConnClick" prefHeight="44.0" prefWidth="140.0" text="Set DB Connection" />
    </children>
 </Pane>

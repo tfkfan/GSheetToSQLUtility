@@ -1,4 +1,4 @@
-package com.tfkfan.app.sheets;
+package com.tfkfan.app.helpers;
 
 import com.google.api.client.auth.oauth2.Credential;
 import com.google.api.client.extensions.java6.auth.oauth2.AuthorizationCodeInstalledApp;
@@ -65,5 +65,17 @@ public final class SheetsHelper {
                 .setApplicationName(APPLICATION_NAME)
                 .build();
         return service.spreadsheets();
+    }
+
+    public static String getSpreadsheetId(String url) {
+        String[] parts = url.split("spreadsheets/d/");
+        String result;
+        if (parts[1].contains("/")) {
+            String[] parts2 = parts[1].split("/");
+            result = parts2[0];
+        } else {
+            result = parts[1];
+        }
+        return result;
     }
 }

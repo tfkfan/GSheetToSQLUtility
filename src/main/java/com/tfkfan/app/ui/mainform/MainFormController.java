@@ -1,5 +1,8 @@
 package com.tfkfan.app.ui.mainform;
 
+import com.google.api.services.sheets.v4.model.AppendValuesResponse;
+import com.google.api.services.sheets.v4.model.ValueRange;
+import com.tfkfan.app.helpers.DbHelper;
 import com.tfkfan.app.ui.dbform.DBConnectionFormController;
 import javafx.event.ActionEvent;
 import javafx.event.Event;
@@ -11,15 +14,24 @@ import javafx.scene.Scene;
 import javafx.scene.control.Button;
 import javafx.scene.control.Label;
 import javafx.scene.control.Slider;
+import javafx.scene.control.TextField;
 import javafx.stage.Modality;
 import javafx.stage.Stage;
 
 import java.io.IOException;
 import java.net.URL;
+import java.security.GeneralSecurityException;
 import java.sql.Connection;
-import java.util.HashMap;
-import java.util.Map;
-import java.util.ResourceBundle;
+import java.sql.ResultSet;
+import java.sql.ResultSetMetaData;
+import java.sql.SQLException;
+import java.util.*;
+
+import static com.tfkfan.app.helpers.AppHelper.processApp;
+import static com.tfkfan.app.helpers.AppHelper.processDatabase;
+import static com.tfkfan.app.helpers.AppHelper.processSpreadsheets;
+import static com.tfkfan.app.helpers.SheetsHelper.getSpreadsheetId;
+import static com.tfkfan.app.helpers.SheetsHelper.getSpreadsheets;
 
 public class MainFormController implements Initializable {
 
@@ -35,6 +47,9 @@ public class MainFormController implements Initializable {
     @FXML
     public Label timeLabel;
 
+    @FXML
+    public TextField spreadsheetUrlField;
+
     private DBConnectionFormController dbWindowController;
     private Parent dbWindow;
     private Stage dbWindowModal;
@@ -43,21 +58,33 @@ public class MainFormController implements Initializable {
     private Map<String, String> properties;
     private Connection connection;
 
-    @FXML
-    public void startButtonClick(Event event) {
-        if (getConnection() == null) {
-            processConnectionWindow();
+    private static String[] tables = {"invoice", "salesorder", "salesorderlinedetail"};
 
-            if (getConnection() == null) {
-                stopBtn.setDisable(true);
-                startBtn.setDisable(true);
-                timeSlider.setDisable(true);
-            } else {
-                stopBtn.setDisable(false);
-                startBtn.setDisable(false);
-                timeSlider.setDisable(false);
-            }
+    @FXML
+    public void startBtnClick(ActionEvent actionEvent) {
+        if (getConnection() == null) {
+            setConnection(DbHelper.getConnection(getProperties().get("host"), Integer.valueOf(getProperties().get("port")),
+                    getProperties().get("name"), getProperties().get("user"), getProperties().get("password")));
+            if (getConnection() == null)
+                processConnectionWindow();
         }
+
+        if (getConnection() == null) {
+            stopBtn.setDisable(true);
+            startBtn.setDisable(true);
+            timeSlider.setDisable(true);
+        } else {
+            stopBtn.setDisable(false);
+            startBtn.setDisable(false);
+            timeSlider.setDisable(false);
+        }
+
+        processApp(getProperties().get("name"), tables, getConnection(), spreadsheetUrlField.getText());
+    }
+
+    @FXML
+    public void stopBtnClick(ActionEvent actionEvent) {
+
     }
 
     @Override
@@ -77,15 +104,9 @@ public class MainFormController implements Initializable {
             dbWindow = dbWindowLoader.load();
             dbWindowController = dbWindowLoader.getController();
 
-            processConnectionWindow();
 
-            if (getConnection() == null) {
-                stopBtn.setDisable(true);
-                startBtn.setDisable(true);
-            } else {
-                stopBtn.setDisable(false);
-                startBtn.setDisable(false);
-            }
+            startBtn.setDisable(true);
+            stopBtn.setDisable(true);
         } catch (IOException e) {
             e.printStackTrace();
         }
@@ -94,6 +115,10 @@ public class MainFormController implements Initializable {
     @FXML
     public void dbConnClick(ActionEvent actionEvent) throws IOException {
         processConnectionWindow();
+        if (getConnection() != null) {
+            startBtn.setDisable(false);
+            stopBtn.setDisable(false);
+        }
     }
 
     private void processConnectionWindow() {

@@ -1,6 +1,6 @@
 package com.tfkfan.app.ui.dbform;
 
-import com.tfkfan.app.db.utils.DbUtils;
+import com.tfkfan.app.helpers.DbHelper;
 import javafx.event.ActionEvent;
 import javafx.fxml.FXML;
 import javafx.fxml.Initializable;
@@ -39,6 +39,12 @@ public class DBConnectionFormController implements Initializable {
     @FXML
     public Button saveBtn;
 
+    @FXML
+    public CheckBox hostCheckbox;
+
+    @FXML
+    public CheckBox portCheckbox;
+
 
     private Stage dbWindow;
 
@@ -48,6 +54,12 @@ public class DBConnectionFormController implements Initializable {
     @Override
     public void initialize(URL location, ResourceBundle resources) {
 
+        portCheckbox.setSelected(true);
+        hostCheckbox.setSelected(true);
+        db_host.setText("localhost");
+        db_host.setDisable(true);
+        db_port.setText("1433");
+        db_port.setDisable(true);
     }
 
     @FXML
@@ -67,21 +79,26 @@ public class DBConnectionFormController implements Initializable {
     @FXML
     public void localCheckboxValueChanged(ActionEvent actionEvent) {
         Boolean isSelected = ((CheckBox) actionEvent.getSource()).isSelected();
-        db_host.setText("");
+        String val = isSelected ? "localhost" : "";
+        db_host.setText(val);
         db_host.setDisable(isSelected);
     }
 
     @FXML
     public void defaultCheckboxValueChanged(ActionEvent actionEvent) {
         Boolean isSelected = ((CheckBox) actionEvent.getSource()).isSelected();
-        db_port.setText("");
+        String val = isSelected ? "1433" : "";
+        db_port.setText(val);
         db_port.setDisable(isSelected);
     }
 
     private void updateConnection() {
+        if (getConnection() != null)
+            return;
+
         updateProperties();
         try {
-            setConnection(DbUtils.getConnection(getProperties().get("host"), Integer.valueOf(getProperties().get("port")),
+            setConnection(DbHelper.getConnection(getProperties().get("host"), Integer.valueOf(getProperties().get("port")),
                     getProperties().get("name"), getProperties().get("user"), getProperties().get("password")));
 
             showAlert("info", "Connection established.");
@@ -105,8 +122,8 @@ public class DBConnectionFormController implements Initializable {
         properties = new HashMap<>();
         properties.put("user", db_user.getText());
         properties.put("password", db_password.getText());
-        properties.put("host", db_host.isDisabled() ? "localhost" : db_host.getText());
-        properties.put("port", db_port.isDisabled() ? String.valueOf(1433) : db_port.getText());
+        properties.put("host", hostCheckbox.isSelected() ? "localhost" : db_host.getText());
+        properties.put("port", portCheckbox.isSelected() ? String.valueOf(1433) : db_port.getText());
         properties.put("name", db_name.getText());
     }
 

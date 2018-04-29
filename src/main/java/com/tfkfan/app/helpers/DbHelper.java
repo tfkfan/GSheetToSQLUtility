@@ -1,16 +1,13 @@
-package com.tfkfan.app.db.utils;
+package com.tfkfan.app.helpers;
 
-import java.sql.Connection;
-import java.sql.DriverManager;
-import java.sql.ResultSet;
-import java.sql.Statement;
+import java.sql.*;
 
-public class DbUtils {
+public class DbHelper {
     public static Connection getConnection(String host, Integer port, String dbName, String dbUser, String dbPassword) {
         // Create a variable for the connection string.
-        if(host == null)
+        if (host == null)
             host = "localhost";
-        if(port == null)
+        if (port == null)
             port = 1433;
 
         String connectionUrl = "jdbc:sqlserver://" + host + ":" + port + ";" +
@@ -30,5 +27,17 @@ public class DbUtils {
 
         }
         return connection;
+    }
+
+    public static ResultSet executeQuery(String query, Connection connection) {
+        ResultSet rs = null;
+        try {
+            Statement stmt = connection.createStatement();
+            rs = stmt.executeQuery(query);
+        } catch (Exception e) {
+            e.printStackTrace();
+        } finally {
+            return rs;
+        }
     }
 }

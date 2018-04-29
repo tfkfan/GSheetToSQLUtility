@@ -1,39 +1,41 @@
 package com.tfkfan.app;
 
-import com.tfkfan.app.db.utils.DbUtils;
+import com.tfkfan.app.helpers.DbHelper;
 
 import java.sql.*;
 
 public class connectDS {
 
     public static void main(String[] args) {
+        Connection connection = DbHelper.getConnection(null, null, "Quickbooks", "dbuser", "qwert");
 
-        // Declare the JDBC objects.
-        Connection con = DbUtils.getConnection(null, null, "Quickbooks", "dbuser", "qwert" );
-        Statement stmt = null;
         ResultSet rs = null;
-
         try {
-            // Create and execute an SQL statement that returns some data.
-            String SQL = "SELECT TOP 10 * FROM invoice";
-            stmt = con.createStatement();
-            rs = stmt.executeQuery(SQL);
+            String query = "SELECT TOP 10 * FROM invoice";
 
-            // Iterate through the data in the result set and display it.
+            rs = DbHelper.executeQuery(query, connection);
+
+            ResultSetMetaData metadata = rs.getMetaData();
+            int columnCount = metadata.getColumnCount();
+
             while (rs.next()) {
-
-                System.out.println("DONE");
+                String row = "";
+                for (int i = 1; i <= columnCount; i++) {
+                    row += "[" + metadata.getColumnName(i) + " / " + rs.getString(i) + " ], ";
+                }
+                System.out.println(row);
             }
-        }
-
-        // Handle any errors that may have occurred.
-        catch (Exception e) {
+        } catch (Exception e) {
             e.printStackTrace();
-        }
-        finally {
-            if (rs != null) try { rs.close(); } catch(Exception e) {}
-            if (stmt != null) try { stmt.close(); } catch(Exception e) {}
-            if (con != null) try { con.close(); } catch(Exception e) {}
+        } finally {
+            if (rs != null) try {
+                rs.close();
+            } catch (Exception e) {
+            }
+            if (connection != null) try {
+                connection.close();
+            } catch (Exception e) {
+            }
         }
     }
 }
