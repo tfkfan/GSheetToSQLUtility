@@ -1,6 +1,5 @@
 package com.tfkfan.app;
 
-import com.tfkfan.app.ui.dbform.DBConnectionFormController;
 import com.tfkfan.app.ui.mainform.MainFormController;
 import javafx.application.Application;
 import javafx.fxml.FXMLLoader;

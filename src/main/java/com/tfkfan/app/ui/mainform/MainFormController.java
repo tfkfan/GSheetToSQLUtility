@@ -3,17 +3,15 @@ package com.tfkfan.app.ui.mainform;
 import com.google.api.services.sheets.v4.model.AppendValuesResponse;
 import com.google.api.services.sheets.v4.model.ValueRange;
 import com.tfkfan.app.helpers.DbHelper;
+import com.tfkfan.app.services.DbService;
 import com.tfkfan.app.services.SheetsService;
+import com.tfkfan.app.services.impl.DbServiceImpl;
 import com.tfkfan.app.services.impl.SheetsServiceImpl;
-import com.tfkfan.app.ui.dbform.DBConnectionFormController;
 import javafx.event.ActionEvent;
 import javafx.fxml.FXML;
-import javafx.fxml.FXMLLoader;
 import javafx.fxml.Initializable;
-import javafx.scene.Parent;
-import javafx.scene.Scene;
 import javafx.scene.control.*;
-import javafx.stage.Modality;
+import javafx.scene.input.MouseEvent;
 import javafx.stage.Stage;
 
 import java.io.IOException;
@@ -24,6 +22,7 @@ import java.sql.ResultSet;
 import java.sql.ResultSetMetaData;
 import java.sql.SQLException;
 import java.util.*;
+
 import static com.tfkfan.app.helpers.AppHelper.*;
 import static com.tfkfan.app.helpers.SheetsHelper.getSpreadsheets;
 
@@ -47,12 +46,36 @@ public class MainFormController implements Initializable {
     @FXML
     public ProgressBar progressBar;
 
-    private SheetsService sheetsService = new SheetsServiceImpl();
+    @FXML
+    public TextField db_user;
 
+    @FXML
+    public TextField db_password;
 
-    private DBConnectionFormController dbWindowController;
-    private Parent dbWindow;
-    private Stage dbWindowModal;
+    @FXML
+    public TextField db_host;
+
+    @FXML
+    public TextField db_port;
+
+    @FXML
+    public TextField db_name;
+
+    @FXML
+    public Button checkConnectionBtn;
+
+    @FXML
+    public CheckBox hostCheckbox;
+
+    @FXML
+    public CheckBox portCheckbox;
+
+    @FXML
+    public Label tableLabel;
+
+    private final SheetsService sheetsService = new SheetsServiceImpl();
+    private final DbService dbService = new DbServiceImpl();
+
     private Stage mainStage;
 
     private Map<String, String> properties;
@@ -61,14 +84,16 @@ public class MainFormController implements Initializable {
     private static String[] tables = {"invoice", "salesorder", "salesorderlinedetail"};
     private static Integer pageLimit = 1000;
 
-
     @FXML
     public void startBtnClick(ActionEvent actionEvent) {
         if (getConnection() == null) {
+            updateProperties();
             setConnection(DbHelper.getConnection(getProperties().get("host"), Integer.valueOf(getProperties().get("port")),
                     getProperties().get("name"), getProperties().get("user"), getProperties().get("password")));
-            if (getConnection() == null)
-                processConnectionWindow();
+            if (getConnection() == null) {
+                showAlert("info", "Database connection not established.");
+                return;
+            }
         }
 
         if (getConnection() == null) {
@@ -86,7 +111,7 @@ public class MainFormController implements Initializable {
             return;
         }
 
-        processApp(getProperties().get("name"), tables, getConnection(), spreadsheetUrlField.getText());
+        processApp(spreadsheetUrlField.getText());
     }
 
     @FXML
@@ -94,15 +119,46 @@ public class MainFormController implements Initializable {
         progressBar.setProgress(0.33d);
     }
 
-    private void processApp(String dbName, String[] tables, Connection connection, String spreadsheetUrl) {
+    @FXML
+    public void checkButtonClick(MouseEvent mouseEvent) {
+        updateProperties();
+
+        setConnection(DbHelper.getConnection(getProperties().get("host"), Integer.valueOf(getProperties().get("port")),
+                getProperties().get("name"), getProperties().get("user"), getProperties().get("password")));
+        if (getConnection() == null) {
+            showAlert("info", "Database connection not established.");
+        } else
+            showAlert("info", "Database connection established.");
+    }
+
+    @FXML
+    public void localCheckboxValueChanged(ActionEvent actionEvent) {
+        Boolean isSelected = ((CheckBox) actionEvent.getSource()).isSelected();
+        String val = isSelected ? "localhost" : "";
+        db_host.setText(val);
+        db_host.setDisable(isSelected);
+    }
+
+    @FXML
+    public void defaultCheckboxValueChanged(ActionEvent actionEvent) {
+        Boolean isSelected = ((CheckBox) actionEvent.getSource()).isSelected();
+        String val = isSelected ? "1433" : "";
+        db_port.setText(val);
+        db_port.setDisable(isSelected);
+    }
+
+    private void processApp(String spreadsheetUrl) {
         try {
             if (tables == null)
                 return;
 
             String spreadsheetId = sheetsService.getSpreadsheetIdFromUrl(spreadsheetUrl);
             progressBar.setProgress(0);
+            tableLabel.setVisible(true);
             for (int i = 0; i < tables.length; i++) {
                 final String table = tables[i];
+                tableLabel.setText("Table '" + table + "' is processing...");
+
                 int rows = 0;
 
                 List<List<Object>> allValues = new ArrayList<>(new ArrayList<>());
@@ -113,11 +169,11 @@ public class MainFormController implements Initializable {
                         break;
 
                     allValues.addAll(values);
-
                 }
                 processSpreadsheets(spreadsheetId, table, allValues);
                 progressBar.setProgress((i + 1) / (double) tables.length);
             }
+            tableLabel.setVisible(false);
             progressBar.setProgress(1);
         } catch (GeneralSecurityException e) {
             e.printStackTrace();
@@ -178,8 +234,6 @@ public class MainFormController implements Initializable {
         return values;
     }
 
-
-
     @Override
     public void initialize(URL location, ResourceBundle resources) {
         timeLabel.setText("Every " + (int) timeSlider.getValue() + " minutes...");
@@ -190,49 +244,24 @@ public class MainFormController implements Initializable {
 
         });
 
-        final FXMLLoader dbWindowLoader = new FXMLLoader(getClass().getResource(
-                "../dbform/DBConnectionForm.fxml"));
+        portCheckbox.setSelected(true);
+        hostCheckbox.setSelected(true);
+        db_host.setText("localhost");
+        db_host.setDisable(true);
+        db_port.setText("1433");
+        db_port.setDisable(true);
 
-        try {
-            dbWindow = dbWindowLoader.load();
-            dbWindowController = dbWindowLoader.getController();
-
-
-            startBtn.setDisable(true);
-            stopBtn.setDisable(true);
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
+        //startBtn.setDisable(true);
+        //stopBtn.setDisable(true);
     }
 
-    @FXML
-    public void dbConnClick(ActionEvent actionEvent) throws IOException {
-        processConnectionWindow();
-        if (getConnection() != null) {
-            startBtn.setDisable(false);
-            stopBtn.setDisable(false);
-        }
-    }
-
-    private void processConnectionWindow() {
-        dbWindowController.setProperties(new HashMap<>());
-        if (dbWindowModal == null) {
-            dbWindowModal = new Stage();
-            dbWindowModal.setResizable(false);
-            dbWindowModal.setTitle("DB Connection");
-            dbWindowModal.setScene(new Scene(dbWindow));
-            dbWindowModal.initModality(Modality.WINDOW_MODAL);
-            dbWindowModal.initOwner(getMainStage());
-
-            dbWindowController.setDbWindow(dbWindowModal);
-        }
-        dbWindowModal.showAndWait();
-        updateConnectionProperties(dbWindowController.getConnection(), dbWindowController.getProperties());
-    }
-
-    private void updateConnectionProperties(Connection connection, Map<String, String> properties) {
-        setConnection(connection);
-        setProperties(properties);
+    private void updateProperties() {
+        properties = new HashMap<>();
+        properties.put("user", db_user.getText());
+        properties.put("password", db_password.getText());
+        properties.put("host", hostCheckbox.isSelected() ? "localhost" : db_host.getText());
+        properties.put("port", portCheckbox.isSelected() ? String.valueOf(1433) : db_port.getText());
+        properties.put("name", db_name.getText());
     }
 
     public Stage getMainStage() {
