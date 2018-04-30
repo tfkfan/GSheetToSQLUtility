@@ -95,6 +95,6 @@ public class SheetsServiceImpl implements SheetsService {
 
     @Override
     public void clearSheet(String spreadsheetId, String sheetName) throws GeneralSecurityException, IOException {
-        getSpreadsheets().values().clear(spreadsheetId,sheetName + "!A1", new ClearValuesRequest());
+        getSpreadsheets().values().clear(spreadsheetId,sheetName + "!A1:CI100000", new ClearValuesRequest()).execute();
     }
 }

@@ -23,10 +23,14 @@ import java.security.GeneralSecurityException;
 import java.sql.Connection;
 import java.sql.SQLException;
 import java.util.*;
+import java.util.concurrent.Executors;
+import java.util.concurrent.ScheduledExecutorService;
+import java.util.concurrent.ScheduledFuture;
+import java.util.concurrent.TimeUnit;
 
 import static com.tfkfan.app.helpers.AppHelper.*;
 
-public class MainFormController implements Initializable {
+public class MainFormController implements Initializable, Runnable {
 
     @FXML
     public Button stopBtn;
@@ -89,6 +93,68 @@ public class MainFormController implements Initializable {
     private static final Integer page = 1000;
     private static final Integer maxRows = 100000;
 
+    private ScheduledFuture<?> task = null;
+    private final ScheduledExecutorService scheduler = Executors.newScheduledThreadPool(1);
+
+    @Override
+    public void run() {
+        try {
+            if (tables == null)
+                return;
+
+            String spreadsheetId = sheetsService.getSpreadsheetIdFromUrl(spreadsheetUrlField.getText());
+            int totalUpdated = 0;
+            for (int i = 0; i < tables.size(); i++) {
+                final String table = tables.get(i);
+                int rows = 0;
+
+                List<List<Object>> allValues = new ArrayList<>(new ArrayList<>());
+                while (rows <= maxRows) {
+                    List<List<Object>> values = dbService.getValues(connection, table, rows, page);
+                    rows += values.size() + 1;
+                    if (values.size() == 0)
+                        break;
+
+                    allValues.addAll(values);
+                }
+                sheetsService.createSheetIfNotExist(spreadsheetId, table);
+                sheetsService.clearSheet(spreadsheetId, table);
+                BatchUpdateValuesResponse response = sheetsService.executeBatchRequest(allValues, spreadsheetId, table + "!A1");
+
+                totalUpdated += response.getTotalUpdatedRows();
+                progressBar.setProgress((i + 1) / (double) tables.size());
+            }
+
+            resultsLabel.setVisible(true);
+            resultsLabel.setText(String.format("%d rows updated", totalUpdated));
+            progressBar.setProgress(1);
+        } catch (GeneralSecurityException e) {
+            showAlert("error", "Spreadsheet access error occured. Make sure all input data is correct and try again.");
+            e.printStackTrace();
+        } catch (IOException e) {
+            showAlert("error", "Input/Output error occured. Make sure all input data is correct and try again.");
+            e.printStackTrace();
+        } catch (SQLException e) {
+            showAlert("error", "SQL Error occured. Try again");
+            e.printStackTrace();
+        } finally {
+            if (connection != null) try {
+                connection.close();
+            } catch (Exception e) {
+            }
+            
+            progressBar.setProgress(0);
+            resultsLabel.setVisible(false);
+
+            try {
+                if (task != null)
+                    task.cancel(true);
+            }catch(Exception e ){
+
+            }
+        }
+    }
+
     @FXML
     public void startBtnClick(ActionEvent actionEvent) {
         progressBar.setProgress(0);
@@ -107,12 +173,20 @@ public class MainFormController implements Initializable {
             return;
         }
 
-        processApp(spreadsheetUrlField.getText());
+        task = scheduler.scheduleAtFixedRate(this, 0, 2, TimeUnit.SECONDS);
     }
 
     @FXML
     public void stopBtnClick(ActionEvent actionEvent) {
-        progressBar.setProgress(0.33d);
+        progressBar.setProgress(0);
+        resultsLabel.setVisible(false);
+
+        try {
+            if (task != null)
+                task.cancel(true);
+        }catch(Exception e ){
+
+        }
     }
 
     @FXML
@@ -141,52 +215,6 @@ public class MainFormController implements Initializable {
         String val = isSelected ? "1433" : "";
         db_port.setText(val);
         db_port.setDisable(isSelected);
-    }
-
-    private void processApp(String spreadsheetUrl) {
-        try {
-            if (tables == null)
-                return;
-
-            String spreadsheetId = sheetsService.getSpreadsheetIdFromUrl(spreadsheetUrl);
-            int totalUpdated = 0;
-            for (int i = 0; i < tables.size(); i++) {
-                final String table = tables.get(i);
-                int rows = 0;
-
-                List<List<Object>> allValues = new ArrayList<>(new ArrayList<>());
-                while (rows <= maxRows) {
-                    List<List<Object>> values = dbService.getValues(connection, table, rows, page);
-                    rows += values.size() + 1;
-                    if (values.size() == 0)
-                        break;
-
-                    allValues.addAll(values);
-                }
-                sheetsService.createSheetIfNotExist(spreadsheetId, table);
-                sheetsService.clearSheet(spreadsheetId, table);
-                BatchUpdateValuesResponse response = sheetsService.executeBatchRequest(allValues, spreadsheetId, table + "!A1");
-
-                totalUpdated += response.getTotalUpdatedRows();
-                progressBar.setProgress((i + 1) / (double) tables.size());
-            }
-
-            resultsLabel.setVisible(true);
-            resultsLabel.setText(String.format("%d rows updated", totalUpdated));
-            progressBar.setProgress(1);
-        } catch (GeneralSecurityException e) {
-            e.printStackTrace();
-        } catch (IOException e) {
-            e.printStackTrace();
-        } catch (SQLException e) {
-            showAlert("error", "SQL Error occured. Try again");
-            e.printStackTrace();
-        } finally {
-            if (connection != null) try {
-                connection.close();
-            } catch (Exception e) {
-            }
-        }
     }
 
     @Override
