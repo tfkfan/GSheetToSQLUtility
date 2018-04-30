@@ -9,7 +9,6 @@ import com.tfkfan.app.services.impl.SheetsServiceImpl;
 import javafx.collections.FXCollections;
 import javafx.collections.ListChangeListener;
 import javafx.event.ActionEvent;
-import javafx.event.EventHandler;
 import javafx.fxml.FXML;
 import javafx.fxml.Initializable;
 import javafx.scene.control.*;
@@ -99,7 +98,7 @@ public class MainFormController implements Initializable, Runnable {
     @Override
     public void run() {
         try {
-            if (tables == null)
+            if (tables == null || tables.isEmpty())
                 return;
 
             String spreadsheetId = sheetsService.getSpreadsheetIdFromUrl(spreadsheetUrlField.getText());
@@ -129,27 +128,27 @@ public class MainFormController implements Initializable, Runnable {
             resultsLabel.setText(String.format("%d rows updated", totalUpdated));
             progressBar.setProgress(1);
         } catch (GeneralSecurityException e) {
-            showAlert("error", "Spreadsheet access error occured. Make sure all input data is correct and try again.");
+            showAlert("error", "Spreadsheet access error occured.", "Make sure all input data is correct and try again.");
             e.printStackTrace();
         } catch (IOException e) {
-            showAlert("error", "Input/Output error occured. Make sure all input data is correct and try again.");
+            showAlert("error", "Input/Output error occured.", "Make sure all input data is correct and try again.");
             e.printStackTrace();
         } catch (SQLException e) {
-            showAlert("error", "SQL Error occured. Try again");
+            showAlert("error", "SQL Error occured.", "Try again");
             e.printStackTrace();
         } finally {
             if (connection != null) try {
                 connection.close();
             } catch (Exception e) {
             }
-            
+
             progressBar.setProgress(0);
             resultsLabel.setVisible(false);
 
             try {
                 if (task != null)
                     task.cancel(true);
-            }catch(Exception e ){
+            } catch (Exception e) {
 
             }
         }
@@ -157,23 +156,29 @@ public class MainFormController implements Initializable, Runnable {
 
     @FXML
     public void startBtnClick(ActionEvent actionEvent) {
-        progressBar.setProgress(0);
-        resultsLabel.setVisible(false);
+        try {
+            progressBar.setProgress(0);
+            resultsLabel.setVisible(false);
 
-        updateProperties();
-        setConnection(DbHelper.getConnection(getProperties().get("host"), Integer.valueOf(getProperties().get("port")),
-                getProperties().get("name"), getProperties().get("user"), getProperties().get("password")));
-        if (getConnection() == null) {
-            showAlert("info", "Database connection not established.");
-            return;
+            updateProperties();
+            setConnection(DbHelper.getConnection(getProperties().get("host"), Integer.valueOf(getProperties().get("port")),
+                    getProperties().get("name"), getProperties().get("user"), getProperties().get("password")));
+            if (getConnection() == null) {
+                showAlert("info", "Database connection not established.", "Check properties and try again.");
+                return;
+            }
+
+            if (spreadsheetUrlField.getText().isEmpty()) {
+                showAlert("info", "Spreadsheet url is empty.", "You have not specified Spreadsheet Url to update.");
+                return;
+            }
+
+            final Integer minutes = (int) timeSlider.getValue();
+
+            task = scheduler.scheduleAtFixedRate(this, 0, minutes, TimeUnit.MINUTES);
+        } catch (Exception e) {
+            showAlert("error", "Unknown error", e.getMessage());
         }
-
-        if (spreadsheetUrlField.getText().isEmpty()) {
-            showAlert("info", "You have not specified Spreadsheet Url to update.");
-            return;
-        }
-
-        task = scheduler.scheduleAtFixedRate(this, 0, 2, TimeUnit.SECONDS);
     }
 
     @FXML
@@ -184,7 +189,7 @@ public class MainFormController implements Initializable, Runnable {
         try {
             if (task != null)
                 task.cancel(true);
-        }catch(Exception e ){
+        } catch (Exception e) {
 
         }
     }
@@ -196,9 +201,9 @@ public class MainFormController implements Initializable, Runnable {
         setConnection(DbHelper.getConnection(getProperties().get("host"), Integer.valueOf(getProperties().get("port")),
                 getProperties().get("name"), getProperties().get("user"), getProperties().get("password")));
         if (getConnection() == null) {
-            showAlert("info", "Database connection not established.");
+            showAlert("info", "Database connection not established.", "Check properties and try again.");
         } else
-            showAlert("info", "Database connection established.");
+            showAlert("info", "Database connection established.", "");
     }
 
     @FXML
