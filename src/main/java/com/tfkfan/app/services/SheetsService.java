@@ -1,6 +1,7 @@
 package com.tfkfan.app.services;
 
 import com.google.api.services.sheets.v4.model.BatchUpdateSpreadsheetResponse;
+import com.google.api.services.sheets.v4.model.BatchUpdateValuesResponse;
 import com.google.api.services.sheets.v4.model.Request;
 import com.google.api.services.sheets.v4.model.Sheet;
 
@@ -19,5 +20,9 @@ public interface SheetsService {
 
     void createSheetIfNotExist(String spreadsheetId, String sheetName) throws GeneralSecurityException, IOException;
 
-    BatchUpdateSpreadsheetResponse executeBatchRequest(List<Request> requests, String spreadsheetId) throws GeneralSecurityException, IOException ;
+    BatchUpdateSpreadsheetResponse executeBatchSpreadsheetRequest(List<Request> requests, String spreadsheetId) throws GeneralSecurityException, IOException;
+
+    BatchUpdateValuesResponse executeBatchRequest(List<List<Object>> values, String spreadsheetId, String range) throws GeneralSecurityException, IOException;
+
+    void clearSheet(String spreadsheetId, String sheetName) throws GeneralSecurityException, IOException;
 }

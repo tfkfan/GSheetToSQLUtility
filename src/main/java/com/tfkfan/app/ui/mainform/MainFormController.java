@@ -1,7 +1,6 @@
 package com.tfkfan.app.ui.mainform;
 
-import com.google.api.services.sheets.v4.model.AppendValuesResponse;
-import com.google.api.services.sheets.v4.model.ValueRange;
+import com.google.api.services.sheets.v4.model.*;
 import com.tfkfan.app.helpers.DbHelper;
 import com.tfkfan.app.services.DbService;
 import com.tfkfan.app.services.SheetsService;
@@ -84,24 +83,12 @@ public class MainFormController implements Initializable {
 
     @FXML
     public void startBtnClick(ActionEvent actionEvent) {
+        updateProperties();
+        setConnection(DbHelper.getConnection(getProperties().get("host"), Integer.valueOf(getProperties().get("port")),
+                getProperties().get("name"), getProperties().get("user"), getProperties().get("password")));
         if (getConnection() == null) {
-            updateProperties();
-            setConnection(DbHelper.getConnection(getProperties().get("host"), Integer.valueOf(getProperties().get("port")),
-                    getProperties().get("name"), getProperties().get("user"), getProperties().get("password")));
-            if (getConnection() == null) {
-                showAlert("info", "Database connection not established.");
-                return;
-            }
-        }
-
-        if (getConnection() == null) {
-            stopBtn.setDisable(true);
-            startBtn.setDisable(true);
-            timeSlider.setDisable(true);
-        } else {
-            stopBtn.setDisable(false);
-            startBtn.setDisable(false);
-            timeSlider.setDisable(false);
+            showAlert("info", "Database connection not established.");
+            return;
         }
 
         if (spreadsheetUrlField.getText().isEmpty()) {
@@ -187,18 +174,13 @@ public class MainFormController implements Initializable {
     public void processSpreadsheets(String spreadsheetId, String sheetName, List<List<Object>> values) throws GeneralSecurityException, IOException {
         sheetsService.createSheetIfNotExist(spreadsheetId, sheetName);
 
-        ValueRange body = new ValueRange()
-                .setValues(values);
-
-        AppendValuesResponse result = getSpreadsheets().values().append(spreadsheetId, sheetName + "!A1", body)
-                .setValueInputOption("RAW")
-                .execute();
-        System.out.printf("%d cells appended.", result.getUpdates().getUpdatedCells());
+        BatchUpdateValuesResponse response = sheetsService.executeBatchRequest(values, spreadsheetId, sheetName + "!A1");
+        System.out.printf("%d cells appended.", response.getTotalUpdatedCells());
     }
 
     public List<List<Object>> processDatabase(Connection connection, String tableName, Integer rowStart, Integer offset) throws SQLException {
         ResultSet rs = null;
-        List<List<Object>> values = new ArrayList<>(new ArrayList<>());
+        List<List<Object>> rows = new ArrayList<>(new ArrayList<>());
         String idField = !tableName.equals("salesorderlinedetail") ? "[TxnId]" : "[TxnLineID]";
 
         //TODO TxnId does not exist in some table, change It to valid query
@@ -214,10 +196,10 @@ public class MainFormController implements Initializable {
         int columnCount = metadata.getColumnCount();
 
         while (rs.next()) {
-            List<Object> rowValue = new ArrayList<>();
+            List<Object> row = new ArrayList<>();
             for (int i = 1; i <= columnCount; i++)
-                rowValue.add(rs.getString(i));
-            values.add(rowValue);
+                row.add(rs.getString(i));
+            rows.add(row);
         }
 
         if (rs != null) try {
@@ -225,7 +207,7 @@ public class MainFormController implements Initializable {
         } catch (Exception e) {
         }
 
-        return values;
+        return rows;
     }
 
     @Override

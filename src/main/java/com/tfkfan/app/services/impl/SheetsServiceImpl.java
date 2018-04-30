@@ -44,7 +44,7 @@ public class SheetsServiceImpl implements SheetsService {
 
         requests.add(request);
 
-        executeBatchRequest(requests, spreadsheetId);
+        executeBatchSpreadsheetRequest(requests, spreadsheetId);
     }
 
     @Override
@@ -70,7 +70,7 @@ public class SheetsServiceImpl implements SheetsService {
     }
 
     @Override
-    public BatchUpdateSpreadsheetResponse executeBatchRequest(List<Request> requests, String spreadsheetId) throws GeneralSecurityException, IOException {
+    public BatchUpdateSpreadsheetResponse executeBatchSpreadsheetRequest(List<Request> requests, String spreadsheetId) throws GeneralSecurityException, IOException {
         BatchUpdateSpreadsheetRequest requestBody = new BatchUpdateSpreadsheetRequest();
         requestBody.setRequests(requests);
 
@@ -78,5 +78,23 @@ public class SheetsServiceImpl implements SheetsService {
                 getSpreadsheets().batchUpdate(spreadsheetId, requestBody);
 
         return request.execute();
+    }
+
+    @Override
+    public BatchUpdateValuesResponse executeBatchRequest(List<List<Object>> values, String spreadsheetId, String range) throws GeneralSecurityException, IOException {
+        List<ValueRange> data = new ArrayList<>();
+        data.add(new ValueRange()
+                .setRange(range)
+                .setValues(values));
+
+        BatchUpdateValuesRequest body = new BatchUpdateValuesRequest()
+                .setValueInputOption("RAW")
+                .setData(data);
+        return getSpreadsheets().values().batchUpdate(spreadsheetId, body).execute();
+    }
+
+    @Override
+    public void clearSheet(String spreadsheetId, String sheetName) throws GeneralSecurityException, IOException {
+        getSpreadsheets().values().clear(spreadsheetId,sheetName + "!A1", new ClearValuesRequest());
     }
 }
