@@ -6,24 +6,25 @@ import com.tfkfan.app.services.DbService;
 import com.tfkfan.app.services.SheetsService;
 import com.tfkfan.app.services.impl.DbServiceImpl;
 import com.tfkfan.app.services.impl.SheetsServiceImpl;
+import javafx.collections.FXCollections;
+import javafx.collections.ListChangeListener;
 import javafx.event.ActionEvent;
+import javafx.event.EventHandler;
 import javafx.fxml.FXML;
 import javafx.fxml.Initializable;
 import javafx.scene.control.*;
 import javafx.scene.input.MouseEvent;
 import javafx.stage.Stage;
+import org.controlsfx.control.CheckComboBox;
 
 import java.io.IOException;
 import java.net.URL;
 import java.security.GeneralSecurityException;
 import java.sql.Connection;
-import java.sql.ResultSet;
-import java.sql.ResultSetMetaData;
 import java.sql.SQLException;
 import java.util.*;
 
 import static com.tfkfan.app.helpers.AppHelper.*;
-import static com.tfkfan.app.helpers.SheetsHelper.getSpreadsheets;
 
 public class MainFormController implements Initializable {
 
@@ -69,6 +70,12 @@ public class MainFormController implements Initializable {
     @FXML
     public CheckBox portCheckbox;
 
+    @FXML
+    public Label resultsLabel;
+
+    @FXML
+    public CheckComboBox<String> tablesList;
+
     private final SheetsService sheetsService = new SheetsServiceImpl();
     private final DbService dbService = new DbServiceImpl();
 
@@ -77,12 +84,16 @@ public class MainFormController implements Initializable {
     private Map<String, String> properties;
     private Connection connection;
 
-    private static String[] tables = {"invoice", "salesorder", "salesorderlinedetail"};
-    private static Integer page = 1000;
-    private static Integer maxRows = 100000;
+    private static final List<String> tables = new ArrayList<>();
+    private static final String[] defaultTables = {"invoice", "salesorder", "salesorderlinedetail"};
+    private static final Integer page = 1000;
+    private static final Integer maxRows = 100000;
 
     @FXML
     public void startBtnClick(ActionEvent actionEvent) {
+        progressBar.setProgress(0);
+        resultsLabel.setVisible(false);
+
         updateProperties();
         setConnection(DbHelper.getConnection(getProperties().get("host"), Integer.valueOf(getProperties().get("port")),
                 getProperties().get("name"), getProperties().get("user"), getProperties().get("password")));
@@ -138,23 +149,30 @@ public class MainFormController implements Initializable {
                 return;
 
             String spreadsheetId = sheetsService.getSpreadsheetIdFromUrl(spreadsheetUrl);
-            progressBar.setProgress(0);
-            for (int i = 0; i < tables.length; i++) {
-                final String table = tables[i];
+            int totalUpdated = 0;
+            for (int i = 0; i < tables.size(); i++) {
+                final String table = tables.get(i);
                 int rows = 0;
 
                 List<List<Object>> allValues = new ArrayList<>(new ArrayList<>());
                 while (rows <= maxRows) {
-                    List<List<Object>> values = processDatabase(connection, table, rows, page);
+                    List<List<Object>> values = dbService.getValues(connection, table, rows, page);
                     rows += values.size() + 1;
                     if (values.size() == 0)
                         break;
 
                     allValues.addAll(values);
                 }
-                processSpreadsheets(spreadsheetId, table, allValues);
-                progressBar.setProgress((i + 1) / (double) tables.length);
+                sheetsService.createSheetIfNotExist(spreadsheetId, table);
+                sheetsService.clearSheet(spreadsheetId, table);
+                BatchUpdateValuesResponse response = sheetsService.executeBatchRequest(allValues, spreadsheetId, table + "!A1");
+
+                totalUpdated += response.getTotalUpdatedRows();
+                progressBar.setProgress((i + 1) / (double) tables.size());
             }
+
+            resultsLabel.setVisible(true);
+            resultsLabel.setText(String.format("%d rows updated", totalUpdated));
             progressBar.setProgress(1);
         } catch (GeneralSecurityException e) {
             e.printStackTrace();
@@ -169,45 +187,6 @@ public class MainFormController implements Initializable {
             } catch (Exception e) {
             }
         }
-    }
-
-    public void processSpreadsheets(String spreadsheetId, String sheetName, List<List<Object>> values) throws GeneralSecurityException, IOException {
-        sheetsService.createSheetIfNotExist(spreadsheetId, sheetName);
-
-        BatchUpdateValuesResponse response = sheetsService.executeBatchRequest(values, spreadsheetId, sheetName + "!A1");
-        System.out.printf("%d cells appended.", response.getTotalUpdatedCells());
-    }
-
-    public List<List<Object>> processDatabase(Connection connection, String tableName, Integer rowStart, Integer offset) throws SQLException {
-        ResultSet rs = null;
-        List<List<Object>> rows = new ArrayList<>(new ArrayList<>());
-        String idField = !tableName.equals("salesorderlinedetail") ? "[TxnId]" : "[TxnLineID]";
-
-        //TODO TxnId does not exist in some table, change It to valid query
-        String query = " WITH CTE AS( "
-                + " SELECT ROW_NUMBER() OVER ( ORDER BY " + idField + " ) AS RowNum , * FROM " + tableName + ") "
-                + " SELECT * FROM CTE WHERE "
-                + " RowNum BETWEEN " + rowStart + " AND " + (rowStart + offset - 1) + " "
-                + " Order By RowNum ";
-
-        rs = DbHelper.executeQuery(query, connection);
-
-        ResultSetMetaData metadata = rs.getMetaData();
-        int columnCount = metadata.getColumnCount();
-
-        while (rs.next()) {
-            List<Object> row = new ArrayList<>();
-            for (int i = 1; i <= columnCount; i++)
-                row.add(rs.getString(i));
-            rows.add(row);
-        }
-
-        if (rs != null) try {
-            rs.close();
-        } catch (Exception e) {
-        }
-
-        return rows;
     }
 
     @Override
@@ -227,8 +206,14 @@ public class MainFormController implements Initializable {
         db_port.setText("1433");
         db_port.setDisable(true);
 
-        //startBtn.setDisable(true);
-        //stopBtn.setDisable(true);
+
+        tablesList.getItems().addAll(FXCollections.observableArrayList(defaultTables));
+        tablesList.getCheckModel().setSelectionMode(SelectionMode.MULTIPLE);
+        tablesList.getCheckModel().getSelectedItems().addListener((ListChangeListener<? super String>) c -> {
+            tables.clear();
+            tables.addAll(c.getList());
+        });
+
     }
 
     private void updateProperties() {

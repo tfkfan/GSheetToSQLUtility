@@ -11,10 +11,11 @@
 <?import javafx.scene.control.TextField?>
 <?import javafx.scene.layout.AnchorPane?>
 <?import javafx.scene.layout.Pane?>
+<?import org.controlsfx.control.CheckComboBox?>
 
-<Pane maxHeight="-Infinity" maxWidth="-Infinity" minHeight="-Infinity" minWidth="-Infinity" prefHeight="446.0" prefWidth="375.0" xmlns="http://javafx.com/javafx/8.0.121" xmlns:fx="http://javafx.com/fxml/1" fx:controller="com.tfkfan.app.ui.mainform.MainFormController">
+<Pane maxHeight="-Infinity" maxWidth="-Infinity" minHeight="-Infinity" minWidth="-Infinity" prefHeight="527.0" prefWidth="375.0" xmlns="http://javafx.com/javafx/8.0.121" xmlns:fx="http://javafx.com/fxml/1" fx:controller="com.tfkfan.app.ui.mainform.MainFormController">
    <children>
-      <TabPane prefHeight="323.0" prefWidth="507.0">
+      <TabPane prefHeight="401.0" prefWidth="423.0">
          <tabs>
             <Tab closable="false" text="Update Options">
                <content>
@@ -35,7 +36,7 @@
             </Tab>
             <Tab closable="false" text="Database Properties">
               <content>
-                <AnchorPane minHeight="0.0" minWidth="0.0" prefHeight="180.0" prefWidth="200.0">
+                <AnchorPane minHeight="0.0" minWidth="0.0" prefHeight="326.0" prefWidth="507.0">
                      <children>
                         <Group layoutX="-7.0" AnchorPane.leftAnchor="20.0" AnchorPane.topAnchor="10.0">
                            <children>
@@ -54,15 +55,18 @@
                               <TextField fx:id="db_name" layoutX="95.0" layoutY="194.0" prefHeight="22.0" prefWidth="149.0" />
                            </children>
                         </Group>
-                        <Button fx:id="checkConnectionBtn" layoutX="194.0" layoutY="250.0" mnemonicParsing="false" onMouseClicked="#checkButtonClick" prefHeight="44.0" prefWidth="156.0" text="Check Connection" />
+                        <Button fx:id="checkConnectionBtn" layoutX="194.0" layoutY="251.0" mnemonicParsing="false" onMouseClicked="#checkButtonClick" prefHeight="44.0" prefWidth="156.0" text="Check Connection" />
+                        <CheckComboBox fx:id="tablesList" layoutX="14.0" layoutY="270.0" prefHeight="25.0" prefWidth="156.0" />
+                        <Label layoutX="14.0" layoutY="243.0" text="Select SQL Tables to export" />
                      </children>
                   </AnchorPane>
               </content>
             </Tab>
          </tabs>
       </TabPane>
-      <Button fx:id="startBtn" layoutX="195.0" layoutY="373.0" mnemonicParsing="false" onAction="#startBtnClick" prefHeight="44.0" prefWidth="156.0" text="Start Update" />
-      <ProgressBar fx:id="progressBar" layoutX="21.0" layoutY="339.0" prefHeight="18.0" prefWidth="330.0" progress="0.0" />
-      <Button fx:id="stopBtn" layoutX="21.0" layoutY="373.0" mnemonicParsing="false" onAction="#stopBtnClick" prefHeight="44.0" prefWidth="156.0" text="Stop Update" />
+      <Button fx:id="startBtn" layoutX="197.0" layoutY="469.0" mnemonicParsing="false" onAction="#startBtnClick" prefHeight="44.0" prefWidth="156.0" text="Start Update" />
+      <ProgressBar fx:id="progressBar" layoutX="23.0" layoutY="435.0" prefHeight="18.0" prefWidth="330.0" progress="0.0" />
+      <Button fx:id="stopBtn" layoutX="23.0" layoutY="469.0" mnemonicParsing="false" onAction="#stopBtnClick" prefHeight="44.0" prefWidth="156.0" text="Stop Update" />
+      <Label fx:id="resultsLabel" layoutX="23.0" layoutY="406.0" prefHeight="17.0" prefWidth="145.0" text="Label" visible="false" />
    </children>
 </Pane>

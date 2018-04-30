@@ -44,6 +44,7 @@ dependencies {
     compile 'com.google.oauth-client:google-oauth-client-jetty:1.23.0'
     compile 'com.google.apis:google-api-services-sheets:v4-rev516-1.23.0'
     compile group: 'com.microsoft.sqlserver', name: 'mssql-jdbc', version: '6.3.6.jre8-preview'
+    compile group: 'org.controlsfx', name: 'controlsfx', version: '8.0.6_20'
 }
 
 
