@@ -18,8 +18,7 @@ public class App extends Application {
 
     @Override
     public void start(Stage primaryStage) throws IOException {
-        final FXMLLoader mainWindowLoader = new FXMLLoader(getClass().getResource(
-                "ui/mainform/MainForm.fxml"));
+        final FXMLLoader mainWindowLoader = new FXMLLoader(getClass().getResource("/fxml/MainForm.fxml"));
 
         final Parent mainWindow = mainWindowLoader.load();
         final MainFormController mainFormController = mainWindowLoader.getController();

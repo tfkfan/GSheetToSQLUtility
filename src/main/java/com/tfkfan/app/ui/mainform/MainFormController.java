@@ -70,9 +70,6 @@ public class MainFormController implements Initializable {
     @FXML
     public CheckBox portCheckbox;
 
-    @FXML
-    public Label tableLabel;
-
     private final SheetsService sheetsService = new SheetsServiceImpl();
     private final DbService dbService = new DbServiceImpl();
 
@@ -155,11 +152,8 @@ public class MainFormController implements Initializable {
 
             String spreadsheetId = sheetsService.getSpreadsheetIdFromUrl(spreadsheetUrl);
             progressBar.setProgress(0);
-            tableLabel.setVisible(true);
             for (int i = 0; i < tables.length; i++) {
                 final String table = tables[i];
-                tableLabel.setText("Table '" + table + "' is processing...");
-
                 int rows = 0;
 
                 List<List<Object>> allValues = new ArrayList<>(new ArrayList<>());
@@ -174,7 +168,6 @@ public class MainFormController implements Initializable {
                 processSpreadsheets(spreadsheetId, table, allValues);
                 progressBar.setProgress((i + 1) / (double) tables.length);
             }
-            tableLabel.setVisible(false);
             progressBar.setProgress(1);
         } catch (GeneralSecurityException e) {
             e.printStackTrace();
