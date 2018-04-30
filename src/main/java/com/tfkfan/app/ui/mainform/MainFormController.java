@@ -47,7 +47,7 @@ public class MainFormController implements Initializable, Runnable {
     public TextField spreadsheetUrlField;
 
     @FXML
-    public ProgressBar progressBar;
+    public ProgressIndicator progressBar;
 
     @FXML
     public TextField db_user;
@@ -101,6 +101,10 @@ public class MainFormController implements Initializable, Runnable {
             if (tables == null || tables.isEmpty())
                 return;
 
+            if(getConnection() != null && getConnection().isClosed())
+                setConnection(DbHelper.getConnection(getProperties().get("host"), Integer.valueOf(getProperties().get("port")),
+                        getProperties().get("name"), getProperties().get("user"), getProperties().get("password")));
+
             String spreadsheetId = sheetsService.getSpreadsheetIdFromUrl(spreadsheetUrlField.getText());
             int totalUpdated = 0;
             for (int i = 0; i < tables.size(); i++) {
@@ -123,33 +127,38 @@ public class MainFormController implements Initializable, Runnable {
                 totalUpdated += response.getTotalUpdatedRows();
                 progressBar.setProgress((i + 1) / (double) tables.size());
             }
-
-            resultsLabel.setVisible(true);
-            resultsLabel.setText(String.format("%d rows updated", totalUpdated));
             progressBar.setProgress(1);
         } catch (GeneralSecurityException e) {
             showAlert("error", "Spreadsheet access error occured.", "Make sure all input data is correct and try again.");
             e.printStackTrace();
+            try {
+                if (task != null)
+                    task.cancel(true);
+            } catch (Exception e2) {
+
+            }
         } catch (IOException e) {
             showAlert("error", "Input/Output error occured.", "Make sure all input data is correct and try again.");
             e.printStackTrace();
+            try {
+                if (task != null)
+                    task.cancel(true);
+            } catch (Exception e2) {
+
+            }
         } catch (SQLException e) {
             showAlert("error", "SQL Error occured.", "Try again");
             e.printStackTrace();
+            try {
+                if (task != null)
+                    task.cancel(true);
+            } catch (Exception e2) {
+
+            }
         } finally {
             if (connection != null) try {
                 connection.close();
             } catch (Exception e) {
-            }
-
-            progressBar.setProgress(0);
-            resultsLabel.setVisible(false);
-
-            try {
-                if (task != null)
-                    task.cancel(true);
-            } catch (Exception e) {
-
             }
         }
     }
@@ -158,6 +167,7 @@ public class MainFormController implements Initializable, Runnable {
     public void startBtnClick(ActionEvent actionEvent) {
         try {
             progressBar.setProgress(0);
+            progressBar.setVisible(true);
             resultsLabel.setVisible(false);
 
             updateProperties();
@@ -174,6 +184,9 @@ public class MainFormController implements Initializable, Runnable {
             }
 
             final Integer minutes = (int) timeSlider.getValue();
+
+            if (task != null)
+                task.cancel(true);
 
             task = scheduler.scheduleAtFixedRate(this, 0, minutes, TimeUnit.MINUTES);
         } catch (Exception e) {
@@ -202,8 +215,17 @@ public class MainFormController implements Initializable, Runnable {
                 getProperties().get("name"), getProperties().get("user"), getProperties().get("password")));
         if (getConnection() == null) {
             showAlert("info", "Database connection not established.", "Check properties and try again.");
-        } else
+        } else {
             showAlert("info", "Database connection established.", "");
+            try {
+                tablesList.getItems().setAll(FXCollections.observableArrayList(dbService.getTables(getConnection())));
+            } catch (SQLException e) {
+                e.printStackTrace();
+            }
+        }
+
+
+
     }
 
     @FXML
@@ -239,14 +261,12 @@ public class MainFormController implements Initializable, Runnable {
         db_port.setText("1433");
         db_port.setDisable(true);
 
-
-        tablesList.getItems().addAll(FXCollections.observableArrayList(defaultTables));
+        tablesList.getItems().setAll(FXCollections.observableArrayList(defaultTables));
         tablesList.getCheckModel().setSelectionMode(SelectionMode.MULTIPLE);
         tablesList.getCheckModel().getSelectedItems().addListener((ListChangeListener<? super String>) c -> {
             tables.clear();
             tables.addAll(c.getList());
         });
-
     }
 
     private void updateProperties() {

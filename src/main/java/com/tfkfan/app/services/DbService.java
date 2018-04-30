@@ -6,4 +6,5 @@ import java.util.List;
 
 public interface DbService {
     List<List<Object>> getValues(Connection connection, String tableName, Integer rowStart, Integer offset) throws SQLException;
+    List<String> getTables(Connection connection) throws SQLException;
 }
