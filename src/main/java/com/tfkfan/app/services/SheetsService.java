@@ -20,6 +20,8 @@ public interface SheetsService {
 
     void createSheetIfNotExist(String spreadsheetId, String sheetName) throws GeneralSecurityException, IOException;
 
+    void appendValues(List<List<Object>> values, String spreadsheetId, String sheetName)  throws GeneralSecurityException, IOException;
+
     BatchUpdateSpreadsheetResponse executeBatchSpreadsheetRequest(List<Request> requests, String spreadsheetId) throws GeneralSecurityException, IOException;
 
     BatchUpdateValuesResponse executeBatchRequest(List<List<Object>> values, String spreadsheetId, String range) throws GeneralSecurityException, IOException;

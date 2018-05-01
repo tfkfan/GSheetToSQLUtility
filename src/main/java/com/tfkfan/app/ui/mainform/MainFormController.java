@@ -111,20 +111,22 @@ public class MainFormController implements Initializable, Runnable {
                 final String table = tables.get(i);
                 int rows = 0;
 
-                List<List<Object>> allValues = new ArrayList<>(new ArrayList<>());
+                sheetsService.createSheetIfNotExist(spreadsheetId, table);
+                sheetsService.clearSheet(spreadsheetId, table);
+
+               // List<List<Object>> allValues = new ArrayList<>(new ArrayList<>());
                 while (rows <= maxRows) {
                     List<List<Object>> values = dbService.getValues(connection, table, rows, page);
                     rows += values.size() + 1;
                     if (values.size() == 0)
                         break;
 
-                    allValues.addAll(values);
+                    sheetsService.appendValues(values, spreadsheetId, table);
+                   //allValues.addAll(values);
+                    //totalUpdated += response.getTotalUpdatedRows();
                 }
-                sheetsService.createSheetIfNotExist(spreadsheetId, table);
-                sheetsService.clearSheet(spreadsheetId, table);
-                BatchUpdateValuesResponse response = sheetsService.executeBatchRequest(allValues, spreadsheetId, table + "!A1");
 
-                totalUpdated += response.getTotalUpdatedRows();
+               //totalUpdated += response.getTotalUpdatedRows();
                 progressBar.setProgress((i + 1) / (double) tables.size());
             }
             progressBar.setProgress(1);

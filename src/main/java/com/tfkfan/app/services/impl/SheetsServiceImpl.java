@@ -70,6 +70,11 @@ public class SheetsServiceImpl implements SheetsService {
     }
 
     @Override
+    public void appendValues(List<List<Object>> values, String spreadsheetId, String sheetName) throws GeneralSecurityException, IOException {
+        getSpreadsheets().values().append(spreadsheetId,sheetName + "!A1", new ValueRange().setValues(values)).setValueInputOption("RAW").execute();
+    }
+
+    @Override
     public BatchUpdateSpreadsheetResponse executeBatchSpreadsheetRequest(List<Request> requests, String spreadsheetId) throws GeneralSecurityException, IOException {
         BatchUpdateSpreadsheetRequest requestBody = new BatchUpdateSpreadsheetRequest();
         requestBody.setRequests(requests);
