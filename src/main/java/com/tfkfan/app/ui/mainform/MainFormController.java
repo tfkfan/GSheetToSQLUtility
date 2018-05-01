@@ -133,30 +133,12 @@ public class MainFormController implements Initializable, Runnable {
         } catch (GeneralSecurityException e) {
             showAlert("error", "Spreadsheet access error occured.", "Make sure all input data is correct and try again.");
             e.printStackTrace();
-            try {
-                if (task != null)
-                    task.cancel(true);
-            } catch (Exception e2) {
-
-            }
         } catch (IOException e) {
             showAlert("error", "Input/Output error occured.", "Make sure all input data is correct and try again.");
             e.printStackTrace();
-            try {
-                if (task != null)
-                    task.cancel(true);
-            } catch (Exception e2) {
-
-            }
         } catch (SQLException e) {
             showAlert("error", "SQL Error occured.", "Try again");
             e.printStackTrace();
-            try {
-                if (task != null)
-                    task.cancel(true);
-            } catch (Exception e2) {
-
-            }
         } finally {
             if (connection != null) try {
                 connection.close();
