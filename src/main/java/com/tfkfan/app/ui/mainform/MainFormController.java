@@ -131,37 +131,23 @@ public class MainFormController implements Initializable, Runnable {
                 progressBar.setProgress((i + 1) / (double) tables.size());
             }
             progressBar.setProgress(1);
-            throw new IOException("sdf");
         } catch (GeneralSecurityException e) {
-            showAlert("error", "Spreadsheet access error occured.", "Make sure all input data is correct and try again.");
-            BufferedWriter out = null;
-            FileWriter fstream = null;
-            try {
-                fstream = new FileWriter("logs.txt");
-                out = new BufferedWriter(fstream);
+            Platform.runLater(() -> {
 
-                out.write(e.toString());
-            } catch (IOException e1) {
-                e1.printStackTrace();
-            } finally {
                 try {
-                    out.close();
-                } catch (IOException e1) {
+                    showAlert("error", "Spreadsheet access error occured.", "Make sure all input data is correct and try again. Error message: " + e.getMessage());
+                    if (task != null)
+                        task.cancel(true);
 
+                } catch (Exception e1) {
+                    e1.printStackTrace();
                 }
-            }
-
-            try {
-                if (task != null)
-                    task.cancel(true);
-            } catch (Exception e2) {
-
-            }
+            });
         } catch (IOException e) {
             Platform.runLater(() -> {
 
                 try {
-                    showAlert("error", "Input/Output error occured.", "Make sure all input data is correct and try again.");
+                    showAlert("error", "Input/Output error occured.", "Make sure all input data is correct and try again. Error message: " + e.getMessage());
                     if (task != null)
                         task.cancel(true);
 
@@ -174,7 +160,7 @@ public class MainFormController implements Initializable, Runnable {
             Platform.runLater(() -> {
 
                 try {
-                    showAlert("error", "SQL Error occured.", e.getMessage());
+                    showAlert("error", "SQL Error occured.",  "Error message: " + e.getMessage());
                     if (task != null)
                         task.cancel(true);
 
