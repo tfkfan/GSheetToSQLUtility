@@ -9,6 +9,8 @@ import com.tfkfan.app.services.impl.SheetsServiceImpl;
 import javafx.application.Platform;
 import javafx.collections.FXCollections;
 import javafx.collections.ListChangeListener;
+import javafx.concurrent.ScheduledService;
+import javafx.concurrent.Task;
 import javafx.event.ActionEvent;
 import javafx.fxml.FXML;
 import javafx.fxml.Initializable;
@@ -146,7 +148,7 @@ public class MainFormController implements Initializable, Runnable {
             Platform.runLater(() -> {
 
                 try {
-                    showAlert("error", "Spreadsheet access error occured.", "Make sure all input data is correct and try again. Error message: " + e.getMessage());
+                    showAlert("error", "Spreadsheet access error occured.", "Make sure all input data is correct and try again. Error message: " + e.toString());
                     if (task != null)
                         task.cancel(true);
 
@@ -158,7 +160,7 @@ public class MainFormController implements Initializable, Runnable {
             Platform.runLater(() -> {
 
                 try {
-                    showAlert("error", "Input/Output error occured.", "Make sure all input data is correct and try again. Error message: " + e.getMessage());
+                    showAlert("error", "Input/Output error occured.", "Make sure all input data is correct and try again. Error message: " + e.toString());
                     if (task != null)
                         task.cancel(true);
 
@@ -167,11 +169,23 @@ public class MainFormController implements Initializable, Runnable {
                 }
             });
         } catch (SQLException e) {
-            showAlert("error", "SQL Error occured.", "Try again");
             Platform.runLater(() -> {
 
                 try {
-                    showAlert("error", "SQL Error occured.",  "Error message: " + e.getMessage());
+                    showAlert("error", "Error occured.",  "Error message: " + e.toString());
+                    if (task != null)
+                        task.cancel(true);
+
+                } catch (Exception e1) {
+                    e1.printStackTrace();
+                }
+            });
+        } catch(Exception e){
+            Platform.runLater(() -> {
+
+
+                try {
+                    showAlert("error", "Error occured.",  "Error message: " + e.toString());
                     if (task != null)
                         task.cancel(true);
 
