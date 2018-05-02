@@ -6,6 +6,7 @@ import com.tfkfan.app.services.DbService;
 import com.tfkfan.app.services.SheetsService;
 import com.tfkfan.app.services.impl.DbServiceImpl;
 import com.tfkfan.app.services.impl.SheetsServiceImpl;
+import javafx.application.Platform;
 import javafx.collections.FXCollections;
 import javafx.collections.ListChangeListener;
 import javafx.event.ActionEvent;
@@ -16,6 +17,8 @@ import javafx.scene.input.MouseEvent;
 import javafx.stage.Stage;
 import org.controlsfx.control.CheckComboBox;
 
+import java.io.BufferedWriter;
+import java.io.FileWriter;
 import java.io.IOException;
 import java.net.URL;
 import java.security.GeneralSecurityException;
@@ -101,7 +104,7 @@ public class MainFormController implements Initializable, Runnable {
             if (tables == null || tables.isEmpty())
                 return;
 
-            if(getConnection() != null && getConnection().isClosed())
+            if (getConnection() != null && getConnection().isClosed())
                 setConnection(DbHelper.getConnection(getProperties().get("host"), Integer.valueOf(getProperties().get("port")),
                         getProperties().get("name"), getProperties().get("user"), getProperties().get("password")));
 
@@ -128,9 +131,26 @@ public class MainFormController implements Initializable, Runnable {
                 progressBar.setProgress((i + 1) / (double) tables.size());
             }
             progressBar.setProgress(1);
+            throw new IOException("sdf");
         } catch (GeneralSecurityException e) {
             showAlert("error", "Spreadsheet access error occured.", "Make sure all input data is correct and try again.");
-            e.printStackTrace();
+            BufferedWriter out = null;
+            FileWriter fstream = null;
+            try {
+                fstream = new FileWriter("logs.txt");
+                out = new BufferedWriter(fstream);
+
+                out.write(e.toString());
+            } catch (IOException e1) {
+                e1.printStackTrace();
+            } finally {
+                try {
+                    out.close();
+                } catch (IOException e1) {
+
+                }
+            }
+
             try {
                 if (task != null)
                     task.cancel(true);
@@ -138,23 +158,30 @@ public class MainFormController implements Initializable, Runnable {
 
             }
         } catch (IOException e) {
-            showAlert("error", "Input/Output error occured.", "Make sure all input data is correct and try again.");
-            e.printStackTrace();
-            try {
-                if (task != null)
-                    task.cancel(true);
-            } catch (Exception e2) {
+            Platform.runLater(() -> {
 
-            }
+                try {
+                    showAlert("error", "Input/Output error occured.", "Make sure all input data is correct and try again.");
+                    if (task != null)
+                        task.cancel(true);
+
+                } catch (Exception e1) {
+                    e1.printStackTrace();
+                }
+            });
         } catch (SQLException e) {
             showAlert("error", "SQL Error occured.", "Try again");
-            e.printStackTrace();
-            try {
-                if (task != null)
-                    task.cancel(true);
-            } catch (Exception e2) {
+            Platform.runLater(() -> {
 
-            }
+                try {
+                    showAlert("error", "SQL Error occured.", e.getMessage());
+                    if (task != null)
+                        task.cancel(true);
+
+                } catch (Exception e1) {
+                    e1.printStackTrace();
+                }
+            });
         } finally {
             if (connection != null) try {
                 connection.close();
@@ -187,6 +214,7 @@ public class MainFormController implements Initializable, Runnable {
 
             if (task != null)
                 task.cancel(true);
+
 
             task = scheduler.scheduleAtFixedRate(this, 0, minutes, TimeUnit.MINUTES);
         } catch (Exception e) {
@@ -223,7 +251,6 @@ public class MainFormController implements Initializable, Runnable {
                 e.printStackTrace();
             }
         }
-
 
 
     }
