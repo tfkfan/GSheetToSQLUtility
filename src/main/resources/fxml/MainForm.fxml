@@ -68,5 +68,6 @@
       <Button fx:id="stopBtn" layoutX="23.0" layoutY="469.0" mnemonicParsing="false" onAction="#stopBtnClick" prefHeight="44.0" prefWidth="156.0" text="Stop Update" />
       <Label fx:id="resultsLabel" layoutX="23.0" layoutY="406.0" prefHeight="17.0" prefWidth="145.0" text="Label" visible="false" />
       <ProgressIndicator fx:id="progressBar" layoutX="25.0" layoutY="423.0" prefHeight="40.0" prefWidth="326.0" progress="0.0" visible="false" />
+      <Label fx:id="infoLabel" layoutX="25.0" layoutY="415.0" prefHeight="17.0" prefWidth="145.0" text="Label" visible="false" />
    </children>
 </Pane>

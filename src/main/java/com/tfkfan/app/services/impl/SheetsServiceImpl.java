@@ -70,8 +70,8 @@ public class SheetsServiceImpl implements SheetsService {
     }
 
     @Override
-    public void appendValues(List<List<Object>> values, String spreadsheetId, String sheetName) throws GeneralSecurityException, IOException {
-        getSpreadsheets().values().append(spreadsheetId,sheetName + "!A1", new ValueRange().setValues(values)).setValueInputOption("RAW").execute();
+    public AppendValuesResponse appendValues(List<List<Object>> values, String spreadsheetId, String sheetName) throws GeneralSecurityException, IOException {
+        return getSpreadsheets().values().append(spreadsheetId,sheetName + "!A1", new ValueRange().setValues(values)).setValueInputOption("RAW").execute();
     }
 
     @Override

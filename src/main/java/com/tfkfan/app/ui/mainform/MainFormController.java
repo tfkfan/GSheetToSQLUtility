@@ -82,8 +82,12 @@ public class MainFormController implements Initializable, Runnable {
     @FXML
     public CheckComboBox<String> tablesList;
 
+    @FXML
+    public Label infoLabel;
+
     private final SheetsService sheetsService = new SheetsServiceImpl();
     private final DbService dbService = new DbServiceImpl();
+
 
     private Stage mainStage;
 
@@ -123,7 +127,13 @@ public class MainFormController implements Initializable, Runnable {
                     if (values.size() == 0)
                         break;
 
-                    sheetsService.appendValues(values, spreadsheetId, table);
+                    AppendValuesResponse  response =  sheetsService.appendValues(values, spreadsheetId, table);
+
+                    Platform.runLater(()->{
+
+                        infoLabel.setVisible(true);
+                        infoLabel.setText(response.getUpdates().getUpdatedRows() + " rows were appended");
+                    });
                    //allValues.addAll(values);
                     //totalUpdated += response.getTotalUpdatedRows();
                 }

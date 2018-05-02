@@ -1,9 +1,6 @@
 package com.tfkfan.app.services;
 
-import com.google.api.services.sheets.v4.model.BatchUpdateSpreadsheetResponse;
-import com.google.api.services.sheets.v4.model.BatchUpdateValuesResponse;
-import com.google.api.services.sheets.v4.model.Request;
-import com.google.api.services.sheets.v4.model.Sheet;
+import com.google.api.services.sheets.v4.model.*;
 
 import java.io.IOException;
 import java.security.GeneralSecurityException;
@@ -20,7 +17,7 @@ public interface SheetsService {
 
     void createSheetIfNotExist(String spreadsheetId, String sheetName) throws GeneralSecurityException, IOException;
 
-    void appendValues(List<List<Object>> values, String spreadsheetId, String sheetName)  throws GeneralSecurityException, IOException;
+    AppendValuesResponse appendValues(List<List<Object>> values, String spreadsheetId, String sheetName)  throws GeneralSecurityException, IOException;
 
     BatchUpdateSpreadsheetResponse executeBatchSpreadsheetRequest(List<Request> requests, String spreadsheetId) throws GeneralSecurityException, IOException;
 
