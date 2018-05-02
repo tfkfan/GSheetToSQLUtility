@@ -9,18 +9,15 @@ import com.tfkfan.app.services.impl.SheetsServiceImpl;
 import javafx.application.Platform;
 import javafx.collections.FXCollections;
 import javafx.collections.ListChangeListener;
-import javafx.concurrent.ScheduledService;
-import javafx.concurrent.Task;
 import javafx.event.ActionEvent;
 import javafx.fxml.FXML;
 import javafx.fxml.Initializable;
 import javafx.scene.control.*;
 import javafx.scene.input.MouseEvent;
 import javafx.stage.Stage;
+import org.apache.log4j.Logger;
 import org.controlsfx.control.CheckComboBox;
 
-import java.io.BufferedWriter;
-import java.io.FileWriter;
 import java.io.IOException;
 import java.net.URL;
 import java.security.GeneralSecurityException;
@@ -35,6 +32,7 @@ import java.util.concurrent.TimeUnit;
 import static com.tfkfan.app.helpers.AppHelper.*;
 
 public class MainFormController implements Initializable, Runnable {
+    private static final Logger logger = Logger.getLogger(MainFormController.class);
 
     @FXML
     public Button stopBtn;
@@ -115,7 +113,6 @@ public class MainFormController implements Initializable, Runnable {
                         getProperties().get("name"), getProperties().get("user"), getProperties().get("password")));
 
             String spreadsheetId = sheetsService.getSpreadsheetIdFromUrl(spreadsheetUrlField.getText());
-            int totalUpdated = 0;
             for (int i = 0; i < tables.size(); i++) {
                 final String table = tables.get(i);
                 int rows = 0;
@@ -136,19 +133,16 @@ public class MainFormController implements Initializable, Runnable {
                         infoLabel.setVisible(true);
                         infoLabel.setText(response.getUpdates().getUpdatedRows() + " rows were appended");
                     });
-                   //allValues.addAll(values);
-                    //totalUpdated += response.getTotalUpdatedRows();
                 }
-
-               //totalUpdated += response.getTotalUpdatedRows();
                 progressBar.setProgress((i + 1) / (double) tables.size());
             }
             progressBar.setProgress(1);
         } catch (GeneralSecurityException e) {
+            logger.error("error",e);
             Platform.runLater(() -> {
 
                 try {
-                    showAlert("error", "Spreadsheet access error occured.", "Make sure all input data is correct and try again. Error message: " + e.toString());
+                    showAlert("error", "Spreadsheet access error occured.", "Make sure all input data is correct and try again.");
                     if (task != null)
                         task.cancel(true);
 
@@ -157,10 +151,11 @@ public class MainFormController implements Initializable, Runnable {
                 }
             });
         } catch (IOException e) {
+            logger.error("error",e);
             Platform.runLater(() -> {
 
                 try {
-                    showAlert("error", "Input/Output error occured.", "Make sure all input data is correct and try again. Error message: " + e.toString());
+                    showAlert("error", "Input/Output error occured.", "Make sure all input data is correct and try again.");
                     if (task != null)
                         task.cancel(true);
 
@@ -169,10 +164,11 @@ public class MainFormController implements Initializable, Runnable {
                 }
             });
         } catch (SQLException e) {
+            logger.error("error",e);
             Platform.runLater(() -> {
 
                 try {
-                    showAlert("error", "Error occured.",  "Error message: " + e.toString());
+                    showAlert("error", "SQL Error occured.",  "See logs for details.");
                     if (task != null)
                         task.cancel(true);
 
@@ -181,11 +177,12 @@ public class MainFormController implements Initializable, Runnable {
                 }
             });
         } catch(Exception e){
+            logger.error("error",e);
             Platform.runLater(() -> {
 
 
                 try {
-                    showAlert("error", "Error occured.",  "Error message: " + e.toString());
+                    showAlert("error", "Error occured.",  "See logs for details.");
                     if (task != null)
                         task.cancel(true);
 
@@ -203,6 +200,7 @@ public class MainFormController implements Initializable, Runnable {
 
     @FXML
     public void startBtnClick(ActionEvent actionEvent) {
+
         try {
             progressBar.setProgress(0);
             progressBar.setVisible(true);
@@ -230,6 +228,7 @@ public class MainFormController implements Initializable, Runnable {
             task = scheduler.scheduleAtFixedRate(this, 0, minutes, TimeUnit.MINUTES);
         } catch (Exception e) {
             showAlert("error", "Unknown error", e.getMessage());
+            logger.error("error",e);
         }
     }
 
