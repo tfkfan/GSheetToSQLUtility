@@ -114,7 +114,10 @@ public class MainFormController implements Initializable, Runnable {
                 final String table = tables.get(i);
                 int rows = 0;
 
-                List<List<Object>> allValues = new ArrayList<>(new ArrayList<>());
+                sheetsService.createSheetIfNotExist(spreadsheetId, table);
+                sheetsService.clearSheet(spreadsheetId, table);
+
+                List<List<Object>> allValues = new ArrayList<>(new ArrayList<>(10000));
                 while (rows <= maxRows) {
                     List<List<Object>> values = dbService.getValues(connection, table, rows, page);
                     rows += values.size() + 1;
@@ -123,8 +126,7 @@ public class MainFormController implements Initializable, Runnable {
 
                     allValues.addAll(values);
                 }
-                sheetsService.createSheetIfNotExist(spreadsheetId, table);
-                sheetsService.clearSheet(spreadsheetId, table);
+
                 BatchUpdateValuesResponse response = sheetsService.executeBatchRequest(allValues, spreadsheetId, table + "!A1");
 
                 totalUpdated += response.getTotalUpdatedRows();
