@@ -72,7 +72,7 @@ public class DbServiceImpl implements DbService {
     @Override
     public List<String> getTables(Connection connection) throws SQLException {
         List<String> res = new ArrayList<>();
-        String query = "SELECT TABLE_NAME FROM INFORMATION_SCHEMA.TABLES";
+        String query = "SELECT TABLE_NAME FROM INFORMATION_SCHEMA.TABLES ORDER BY TABLE_NAME ASC";
         ResultSet rs = DbHelper.executeQuery(query,connection);
         while(rs.next()){
             res.add(rs.getString(1));

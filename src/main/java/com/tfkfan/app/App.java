@@ -10,7 +10,7 @@ import javafx.stage.Stage;
 import java.io.IOException;
 
 public class App extends Application {
-    public static final String title = "Sheets Updater";
+    public static final String title = "Sheets Updater v 1.0.1";
 
     public static void main(String[] args) {
         launch(args);
