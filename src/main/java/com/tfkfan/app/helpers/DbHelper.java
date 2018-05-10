@@ -29,15 +29,8 @@ public class DbHelper {
         return connection;
     }
 
-    public static ResultSet executeQuery(String query, Connection connection) {
-        ResultSet rs = null;
-        try {
-            Statement stmt = connection.createStatement();
-            rs = stmt.executeQuery(query);
-        } catch (Exception e) {
-            e.printStackTrace();
-        } finally {
-            return rs;
-        }
+    public static ResultSet executeQuery(String query, Connection connection) throws SQLException {
+        Statement stmt = connection.createStatement();
+        return stmt.executeQuery(query);
     }
 }

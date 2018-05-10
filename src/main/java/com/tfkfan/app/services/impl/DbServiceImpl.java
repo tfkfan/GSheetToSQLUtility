@@ -12,14 +12,17 @@ import java.util.List;
 
 public class DbServiceImpl implements DbService {
     @Override
-    public List<List<Object>> getValues(Connection connection, String tableName, Integer rowStart, Integer offset) throws SQLException {
-        List<List<Object>> rows = new ArrayList<>(new ArrayList<>(10000));
-        String idField = !tableName.equals("salesorderlinedetail") ? "[TxnId]" : "[TxnLineID]";
+    public List<List<Object>> getValues(Connection connection, List<Object> columns, String tableName, Integer rowStart, Integer offset) throws SQLException {
+        List<List<Object>> rows = new ArrayList<>(30000);
+        String columnsStr = "";
+        for(int i = 0; i < columns.size(); i++) {
+            final String columnName = "[" + columns.get(i) + "]";
+            columnsStr += i != columns.size() - 1 ? columnName + ", " : columnName;
+        }
 
-        //TODO TxnId does not exist in some table, change It to valid query
         String query = " WITH CTE AS( "
-                + " SELECT ROW_NUMBER() OVER ( ORDER BY " + idField + " ) AS RowNum , * FROM " + tableName + ") "
-                + " SELECT * FROM CTE WHERE "
+                + " SELECT ROW_NUMBER() OVER ( ORDER BY (SELECT NULL) ) AS RowNum , * FROM " + tableName + " ) "
+                + " SELECT " + columnsStr + " FROM CTE WHERE "
                 + " RowNum BETWEEN " + rowStart + " AND " + (rowStart + offset - 1) + " "
                 + " Order By RowNum ";
 
@@ -41,6 +44,29 @@ public class DbServiceImpl implements DbService {
         }
 
         return rows;
+    }
+
+    @Override
+    public List<Object> getTableColumns(Connection connection, String tableName) throws SQLException {
+        final List<Object> row = new ArrayList<>();
+
+        String query = " SELECT TOP(1) * FROM " + tableName;
+
+        ResultSet rs = DbHelper.executeQuery(query, connection);
+
+        ResultSetMetaData metadata = rs.getMetaData();
+        int columnCount = metadata.getColumnCount();
+
+
+        for (int i = 1; i <= columnCount; i++)
+            row.add(metadata.getColumnName(i));
+
+        if (rs != null) try {
+            rs.close();
+        } catch (Exception e) {
+        }
+
+        return row;
     }
 
     @Override
