@@ -1,5 +1,5 @@
 # sheetsupdater
-SQL To Google Sheets transfer
+SQL To Google Sheets transfer utility
 
 On first run app obtains google api credentials.
 To create executable .jar type in cmd from current project directory:
